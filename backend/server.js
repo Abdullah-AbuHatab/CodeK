@@ -45,7 +45,30 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(cors());
+// 🌐 CORS: only allow trusted origins. Configure via ALLOWED_ORIGINS
+// (comma-separated). Defaults to localhost:3000 for local development.
+const allowedOrigins = (
+  process.env.ALLOWED_ORIGINS || "http://localhost:3000"
+)
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no Origin header (curl, mobile apps, server-to-server).
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Disallowed origin: respond without CORS headers; the browser will block.
+    // We log but don't throw — the request still completes normally.
+    console.warn(`⚠️  CORS blocked origin: ${origin}`);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api", apiLimiter);
 app.use("/api/quizzes", quizRoutes);
