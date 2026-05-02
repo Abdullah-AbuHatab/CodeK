@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../config";
 import Notification from "../../components/common/Notification";
+import StudentsTab from "./admin/StudentsTab";
+import StudentForm from "./admin/StudentForm";
 import "./AdminManage.css";
 
 export default function AdminManage() {
@@ -679,90 +681,15 @@ export default function AdminManage() {
         <div className="tab-content">
           {/* Students Tab */}
           {activeTab === "students" && (
-            <div>
-              <div className="section-header">
-                <div className="header-left">
-                  <h2>Students Management</h2>
-                </div>
-                <button className="add-btn" onClick={handleAddStudent}>
-                  Add Student
-                </button>
-              </div>
-              <input
-                type="text"
-                placeholder="Search students..."
-                className="search-input"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {filteredStudents.length > 0 ? (
-                <div className="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Subjects</th>
-                        <th>Results</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredStudents.map((student) => (
-                        <tr key={student._id}>
-                          <td className="student-name">{student.fullName}</td>
-                          <td>{student.username}</td>
-                          <td>{student.email}</td>
-                          <td>{student.phone}</td>
-                          <td>
-                            {student.courses && student.courses.length > 0
-                              ? student.courses
-                                  .map((id) => courseMap[id] || id)
-                                  .join(", ")
-                              : "-"}
-                          </td>
-                          <td>
-                            {student.quizResults &&
-                            student.quizResults.length > 0
-                              ? student.quizResults
-                                  .map((q) => `${q.score}/${q.total}`)
-                                  .join(" | ")
-                              : "-"}
-                          </td>
-                          <td>
-                            <div className="action-buttons">
-                              <button
-                                className="edit-btn"
-                                onClick={() => handleEditStudent(student)}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="delete-btn"
-                                onClick={() =>
-                                  handleDeleteStudent(
-                                    student._id,
-                                    student.fullName,
-                                  )
-                                }
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <p>No students found</p>
-                </div>
-              )}
-            </div>
+            <StudentsTab
+              students={filteredStudents}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              courseMap={courseMap}
+              onAdd={handleAddStudent}
+              onEdit={handleEditStudent}
+              onDelete={handleDeleteStudent}
+            />
           )}
 
           {/* Courses Tab */}
@@ -1034,76 +961,13 @@ export default function AdminManage() {
 
               {/* Student Form */}
               {modalType === "student" && (
-                <form onSubmit={handleSaveStudent} className="student-form">
-                  <div className="form-group">
-                    <label>Full Name</label>
-                    <input
-                      type="text"
-                      value={formData.fullName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, fullName: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Username</label>
-                    <input
-                      type="text"
-                      value={formData.username}
-                      onChange={(e) =>
-                        setFormData({ ...formData, username: e.target.value })
-                      }
-                      required
-                      disabled={!!editingStudent}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Phone</label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Password</label>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                      required={!editingStudent}
-                    />
-                  </div>
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="cancel-btn"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="save-btn">
-                      {editingStudent ? "Update" : "Add"} Student
-                    </button>
-                  </div>
-                </form>
+                <StudentForm
+                  formData={formData}
+                  setFormData={setFormData}
+                  editingStudent={editingStudent}
+                  onSubmit={handleSaveStudent}
+                  onCancel={() => setShowModal(false)}
+                />
               )}
 
               {/* Course Form */}
