@@ -9,6 +9,8 @@ import QuizQuestionsManager from "./admin/QuizQuestionsManager";
 import CourseForm from "./admin/CourseForm";
 import QuestionForm from "./admin/QuestionForm";
 import QuestionWizard from "./admin/QuestionWizard";
+import SubjectsTab from "./admin/SubjectsTab";
+import SubjectForm from "./admin/SubjectForm";
 import "./AdminManage.css";
 
 export default function AdminManage() {
@@ -712,84 +714,14 @@ export default function AdminManage() {
 
           {/* University Subjects Tab */}
           {activeTab === "university" && (
-            <div>
-              <div className="section-header">
-                <div className="header-left">
-                  <h2>University Subjects Management</h2>
-                </div>
-                <button
-                  className="add-btn"
-                  onClick={handleAddUniversitySubject}
-                >
-                  Add Subject
-                </button>
-              </div>
-
-              {/* Search */}
-              <div className="search-container">
-                <input
-                  type="text"
-                  placeholder="Search university subjects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-              </div>
-
-              {/* University Subjects Table */}
-              {filteredUniversitySubjects.length > 0 ? (
-                <div className="table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Semester</th>
-                        <th>Badge</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredUniversitySubjects.map((subject) => (
-                        <tr key={subject._id}>
-                          <td>{subject.id}</td>
-                          <td>{subject.title}</td>
-                          <td>{subject.semester}</td>
-                          <td>{subject.badge}</td>
-                          <td>
-                            <div className="action-buttons">
-                              <button
-                                className="edit-btn"
-                                onClick={() =>
-                                  handleEditUniversitySubject(subject)
-                                }
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="delete-btn"
-                                onClick={() =>
-                                  handleDeleteUniversitySubject(
-                                    subject._id,
-                                    subject.title,
-                                  )
-                                }
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <p>No university subjects found</p>
-                </div>
-              )}
-            </div>
+            <SubjectsTab
+              subjects={filteredUniversitySubjects}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onAdd={handleAddUniversitySubject}
+              onEdit={handleEditUniversitySubject}
+              onDelete={handleDeleteUniversitySubject}
+            />
           )}
 
           {/* Quiz Management */}
@@ -892,142 +824,13 @@ export default function AdminManage() {
 
               {/* University Subject Form */}
               {modalType === "university" && (
-                <form
+                <SubjectForm
+                  formData={universitySubjectFormData}
+                  setFormData={setUniversitySubjectFormData}
+                  editingSubject={editingUniversitySubject}
                   onSubmit={handleSaveUniversitySubject}
-                  className="student-form"
-                >
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>ID</label>
-                      <input
-                        type="text"
-                        value={universitySubjectFormData.id}
-                        onChange={(e) =>
-                          setUniversitySubjectFormData({
-                            ...universitySubjectFormData,
-                            id: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Title</label>
-                      <input
-                        type="text"
-                        value={universitySubjectFormData.title}
-                        onChange={(e) =>
-                          setUniversitySubjectFormData({
-                            ...universitySubjectFormData,
-                            title: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Semester</label>
-                      <input
-                        type="text"
-                        value={universitySubjectFormData.semester}
-                        onChange={(e) =>
-                          setUniversitySubjectFormData({
-                            ...universitySubjectFormData,
-                            semester: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Badge</label>
-                      <input
-                        type="text"
-                        value={universitySubjectFormData.badge}
-                        onChange={(e) =>
-                          setUniversitySubjectFormData({
-                            ...universitySubjectFormData,
-                            badge: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Long Description</label>
-                    <textarea
-                      value={universitySubjectFormData.longDescription}
-                      onChange={(e) =>
-                        setUniversitySubjectFormData({
-                          ...universitySubjectFormData,
-                          longDescription: e.target.value,
-                        })
-                      }
-                      rows="4"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Prerequisites</label>
-                    <input
-                      type="text"
-                      value={universitySubjectFormData.prerequisites}
-                      onChange={(e) =>
-                        setUniversitySubjectFormData({
-                          ...universitySubjectFormData,
-                          prerequisites: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Quiz Questions</label>
-                      <input
-                        type="number"
-                        value={universitySubjectFormData.quiz.numQuestions}
-                        onChange={(e) =>
-                          setUniversitySubjectFormData({
-                            ...universitySubjectFormData,
-                            quiz: {
-                              ...universitySubjectFormData.quiz,
-                              numQuestions: parseInt(e.target.value) || 15,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Estimated Time</label>
-                      <input
-                        type="text"
-                        value={universitySubjectFormData.quiz.estimatedTime}
-                        onChange={(e) =>
-                          setUniversitySubjectFormData({
-                            ...universitySubjectFormData,
-                            quiz: {
-                              ...universitySubjectFormData.quiz,
-                              estimatedTime: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="cancel-btn"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="save-btn">
-                      {editingUniversitySubject ? "Update" : "Add"} Subject
-                    </button>
-                  </div>
-                </form>
+                  onCancel={() => setShowModal(false)}
+                />
               )}
             </div>
           </div>
