@@ -4,6 +4,11 @@ import { API_URL } from "../../config";
 import Notification from "../../components/common/Notification";
 import StudentsTab from "./admin/StudentsTab";
 import StudentForm from "./admin/StudentForm";
+import CoursesTab from "./admin/CoursesTab";
+import QuizQuestionsManager from "./admin/QuizQuestionsManager";
+import CourseForm from "./admin/CourseForm";
+import QuestionForm from "./admin/QuestionForm";
+import QuestionWizard from "./admin/QuestionWizard";
 import "./AdminManage.css";
 
 export default function AdminManage() {
@@ -694,82 +699,15 @@ export default function AdminManage() {
 
           {/* Courses Tab */}
           {activeTab === "courses" && (
-            <div>
-              <div className="section-header">
-                <div className="header-left">
-                  <h2>Courses Management</h2>
-                </div>
-                <button className="add-btn" onClick={handleAddCourse}>
-                  Add Course
-                </button>
-              </div>
-              <input
-                type="text"
-                placeholder="Search courses..."
-                className="search-input"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {filteredCourses.length > 0 ? (
-                <div className="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Title</th>
-                        <th>Category</th>
-                        <th>Level</th>
-                        <th>Duration</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredCourses.map((course) => (
-                        <tr key={course._id}>
-                          <td>{course.title}</td>
-                          <td>{course.category}</td>
-                          <td>
-                            <span
-                              className={`level-badge level-${course.level.toLowerCase()}`}
-                            >
-                              {course.level}
-                            </span>
-                          </td>
-                          <td>{course.duration}</td>
-                          <td>
-                            <div className="action-buttons">
-                              <button
-                                className="edit-btn"
-                                onClick={() => handleEditCourse(course)}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="quiz-btn"
-                                onClick={() => handleManageQuiz(course.id)}
-                              >
-                                Quiz
-                              </button>
-                              <button
-                                className="delete-btn"
-                                onClick={() =>
-                                  handleDeleteCourse(course._id, course.title)
-                                }
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <p>No courses found</p>
-                </div>
-              )}
-            </div>
+            <CoursesTab
+              courses={filteredCourses}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onAdd={handleAddCourse}
+              onEdit={handleEditCourse}
+              onManageQuiz={handleManageQuiz}
+              onDelete={handleDeleteCourse}
+            />
           )}
 
           {/* University Subjects Tab */}
@@ -856,69 +794,13 @@ export default function AdminManage() {
 
           {/* Quiz Management */}
           {selectedCourseForQuiz && (
-            <div>
-              <div className="section-header">
-                <div className="header-left">
-                  <h2>Quiz Management</h2>
-                  <button
-                    className="back-btn"
-                    onClick={() => setSelectedCourseForQuiz(null)}
-                  >
-                    ← Back to Courses
-                  </button>
-                </div>
-                <button className="add-btn" onClick={handleAddQuestion}>
-                  Add Question
-                </button>
-              </div>
-              <div className="questions-list">
-                {quizzes.map((question) => (
-                  <div key={question._id} className="question-card">
-                    <div className="question-header">
-                      <h3>{question.question}</h3>
-                      <div className="action-buttons">
-                        <button
-                          className="edit-btn"
-                          onClick={() => handleEditQuestion(question)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="delete-btn"
-                          onClick={() => handleDeleteQuestion(question._id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                    <div className="question-body">
-                      <ul>
-                        {question.options.map((option, index) => (
-                          <li
-                            key={index}
-                            style={{
-                              fontWeight:
-                                option === question.answer ? "bold" : "normal",
-                              color:
-                                option === question.answer
-                                  ? "#10b981"
-                                  : "inherit",
-                            }}
-                          >
-                            {option}
-                          </li>
-                        ))}
-                      </ul>
-                      {question.hint && (
-                        <p>
-                          <strong>Hint:</strong> {question.hint}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <QuizQuestionsManager
+              questions={quizzes}
+              onBack={() => setSelectedCourseForQuiz(null)}
+              onAdd={handleAddQuestion}
+              onEdit={handleEditQuestion}
+              onDelete={handleDeleteQuestion}
+            />
           )}
         </div>
 
@@ -972,455 +854,41 @@ export default function AdminManage() {
 
               {/* Course Form */}
               {modalType === "course" && (
-                <form onSubmit={handleSaveCourse} className="student-form">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>ID</label>
-                      <input
-                        type="text"
-                        value={courseFormData.id}
-                        onChange={(e) =>
-                          setCourseFormData({
-                            ...courseFormData,
-                            id: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Title</label>
-                      <input
-                        type="text"
-                        value={courseFormData.title}
-                        onChange={(e) =>
-                          setCourseFormData({
-                            ...courseFormData,
-                            title: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Category</label>
-                      <input
-                        type="text"
-                        value={courseFormData.category}
-                        onChange={(e) =>
-                          setCourseFormData({
-                            ...courseFormData,
-                            category: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Level</label>
-                      <select
-                        value={courseFormData.level}
-                        onChange={(e) =>
-                          setCourseFormData({
-                            ...courseFormData,
-                            level: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="Beginner">Beginner</option>
-                        <option value="Intermediate">Intermediate</option>
-                        <option value="Advanced">Advanced</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Duration</label>
-                      <input
-                        type="text"
-                        value={courseFormData.duration}
-                        onChange={(e) =>
-                          setCourseFormData({
-                            ...courseFormData,
-                            duration: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Badge</label>
-                      <input
-                        type="text"
-                        value={courseFormData.badge}
-                        onChange={(e) =>
-                          setCourseFormData({
-                            ...courseFormData,
-                            badge: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Short Description</label>
-                    <textarea
-                      value={courseFormData.shortDescription}
-                      onChange={(e) =>
-                        setCourseFormData({
-                          ...courseFormData,
-                          shortDescription: e.target.value,
-                        })
-                      }
-                      rows="3"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Long Description</label>
-                    <textarea
-                      value={courseFormData.longDescription}
-                      onChange={(e) =>
-                        setCourseFormData({
-                          ...courseFormData,
-                          longDescription: e.target.value,
-                        })
-                      }
-                      rows="5"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Prerequisites</label>
-                    <textarea
-                      value={courseFormData.prerequisitesShort}
-                      onChange={(e) =>
-                        setCourseFormData({
-                          ...courseFormData,
-                          prerequisitesShort: e.target.value,
-                        })
-                      }
-                      rows="3"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Topics</label>
-                    <textarea
-                      value={courseFormData.topics}
-                      onChange={(e) =>
-                        setCourseFormData({
-                          ...courseFormData,
-                          topics: e.target.value,
-                        })
-                      }
-                      rows="3"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Objectives</label>
-                    <textarea
-                      value={courseFormData.objectives}
-                      onChange={(e) =>
-                        setCourseFormData({
-                          ...courseFormData,
-                          objectives: e.target.value,
-                        })
-                      }
-                      rows="3"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Assessment Instructions</label>
-                    <textarea
-                      value={courseFormData.assessmentInstructions}
-                      onChange={(e) =>
-                        setCourseFormData({
-                          ...courseFormData,
-                          assessmentInstructions: e.target.value,
-                        })
-                      }
-                      rows="3"
-                    />
-                  </div>
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="cancel-btn"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="save-btn">
-                      {editingCourse ? "Update" : "Add"} Course
-                    </button>
-                  </div>
-                </form>
+                <CourseForm
+                  courseFormData={courseFormData}
+                  setCourseFormData={setCourseFormData}
+                  editingCourse={editingCourse}
+                  onSubmit={handleSaveCourse}
+                  onCancel={() => setShowModal(false)}
+                />
               )}
 
               {/* Question Form - Normal Mode */}
               {modalType === "question" && !wizardMode && (
-                <form onSubmit={handleSaveQuestion} className="student-form">
-                  <div className="form-group">
-                    <label>Question</label>
-                    <textarea
-                      value={questionFormData.question}
-                      onChange={(e) =>
-                        setQuestionFormData({
-                          ...questionFormData,
-                          question: e.target.value,
-                        })
-                      }
-                      required
-                      rows="3"
-                    />
-                  </div>
-                  {questionFormData.options.map((option, index) => (
-                    <div key={index} className="form-group">
-                      <label>Option {index + 1}</label>
-                      <input
-                        type="text"
-                        value={option}
-                        onChange={(e) => {
-                          const newOptions = [...questionFormData.options];
-                          newOptions[index] = e.target.value;
-                          setQuestionFormData({
-                            ...questionFormData,
-                            options: newOptions,
-                          });
-                        }}
-                        required
-                      />
-                    </div>
-                  ))}
-                  <div className="form-group">
-                    <label>Correct Answer</label>
-                    <select
-                      value={questionFormData.answer}
-                      onChange={(e) =>
-                        setQuestionFormData({
-                          ...questionFormData,
-                          answer: e.target.value,
-                        })
-                      }
-                      required
-                    >
-                      <option value="">Select correct answer</option>
-                      {questionFormData.options.map((option, index) => (
-                        <option key={index} value={option}>
-                          Option {index + 1}: {option}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="cancel-btn"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="save-btn">
-                      {editingQuestion ? "Update" : "Add"} Question
-                    </button>
-                  </div>
-                </form>
+                <QuestionForm
+                  questionFormData={questionFormData}
+                  setQuestionFormData={setQuestionFormData}
+                  editingQuestion={editingQuestion}
+                  onSubmit={handleSaveQuestion}
+                  onCancel={() => setShowModal(false)}
+                />
               )}
 
-              {/* Question Wizard - Step 1: Select Number of Questions */}
-              {modalType === "question" &&
-                wizardMode &&
-                questionsToAdd.length === 0 && (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleStartWizard();
-                    }}
-                    className="student-form"
-                  >
-                    <h3 style={{ marginBottom: "20px", textAlign: "center" }}>
-                      Add Multiple Questions
-                    </h3>
-                    <div className="form-group">
-                      <label>How many questions do you want to add?</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="100"
-                        value={totalQuestions}
-                        onChange={(e) => {
-                          const input = e.target.value;
-                          // Allow empty string for user to clear and retype
-                          if (input === "") {
-                            setTotalQuestions("");
-                          } else {
-                            const num = parseInt(input, 10);
-                            // Only set if it's a valid positive integer
-                            if (!isNaN(num) && num > 0) {
-                              // Cap at 100 for UI, but allow user to continue typing
-                              setTotalQuestions(num > 100 ? 100 : num);
-                            }
-                          }
-                        }}
-                        onBlur={() => {
-                          // When user leaves field, ensure it has a valid value
-                          if (totalQuestions === "" || totalQuestions < 1) {
-                            setTotalQuestions(1);
-                          } else if (totalQuestions > 100) {
-                            setTotalQuestions(100);
-                          }
-                        }}
-                        placeholder="Enter number of questions"
-                        required
-                      />
-                      {wizardErrors.totalQuestions && (
-                        <p style={{ color: "red", marginTop: "5px" }}>
-                          {wizardErrors.totalQuestions}
-                        </p>
-                      )}
-                      <small style={{ display: "block", marginTop: "10px" }}>
-                        You can add 1 to 100 questions per session
-                      </small>
-                    </div>
-                    <div className="form-actions">
-                      <button
-                        type="button"
-                        className="cancel-btn"
-                        onClick={() => {
-                          handleCancelWizard();
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button type="submit" className="save-btn">
-                        Continue
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-              {/* Question Wizard - Step 2+: Add Individual Questions */}
-              {modalType === "question" &&
-                wizardMode &&
-                questionsToAdd.length > 0 && (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleNextQuestion();
-                    }}
-                    className="student-form"
-                  >
-                    <div style={{ marginBottom: "20px" }}>
-                      <h3 style={{ textAlign: "center" }}>
-                        Question {currentQuestionStep + 1} of {totalQuestions}
-                      </h3>
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "8px",
-                          backgroundColor: "#e0e0e0",
-                          borderRadius: "4px",
-                          overflow: "hidden",
-                          marginTop: "10px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${((currentQuestionStep + 1) / totalQuestions) * 100}%`,
-                            height: "100%",
-                            backgroundColor: "#007bff",
-                            transition: "width 0.3s ease",
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Question</label>
-                      <textarea
-                        value={questionFormData.question}
-                        onChange={(e) =>
-                          setQuestionFormData({
-                            ...questionFormData,
-                            question: e.target.value,
-                          })
-                        }
-                        rows="3"
-                      />
-                      {wizardErrors.question && (
-                        <p style={{ color: "red", marginTop: "5px" }}>
-                          {wizardErrors.question}
-                        </p>
-                      )}
-                    </div>
-
-                    {questionFormData.options.map((option, index) => (
-                      <div key={index} className="form-group">
-                        <label>Option {index + 1}</label>
-                        <input
-                          type="text"
-                          value={option}
-                          onChange={(e) => {
-                            const newOptions = [...questionFormData.options];
-                            newOptions[index] = e.target.value;
-                            setQuestionFormData({
-                              ...questionFormData,
-                              options: newOptions,
-                            });
-                          }}
-                        />
-                      </div>
-                    ))}
-                    {wizardErrors.options && (
-                      <p style={{ color: "red", marginBottom: "15px" }}>
-                        {wizardErrors.options}
-                      </p>
-                    )}
-
-                    <div className="form-group">
-                      <label>Correct Answer</label>
-                      <select
-                        value={questionFormData.answer}
-                        onChange={(e) =>
-                          setQuestionFormData({
-                            ...questionFormData,
-                            answer: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="">Select correct answer</option>
-                        {questionFormData.options.map((option, index) => (
-                          <option key={index} value={option}>
-                            Option {index + 1}: {option}
-                          </option>
-                        ))}
-                      </select>
-                      {wizardErrors.answer && (
-                        <p style={{ color: "red", marginTop: "5px" }}>
-                          {wizardErrors.answer}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="form-actions">
-                      <button
-                        type="button"
-                        className="cancel-btn"
-                        onClick={() => {
-                          handleCancelWizard();
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button type="submit" className="save-btn">
-                        {currentQuestionStep === totalQuestions - 1
-                          ? "Finish Adding Questions"
-                          : "Next Question"}
-                      </button>
-                    </div>
-                  </form>
-                )}
+              {/* Question Wizard (both steps) */}
+              {modalType === "question" && wizardMode && (
+                <QuestionWizard
+                  questionFormData={questionFormData}
+                  setQuestionFormData={setQuestionFormData}
+                  totalQuestions={totalQuestions}
+                  setTotalQuestions={setTotalQuestions}
+                  currentQuestionStep={currentQuestionStep}
+                  questionsToAdd={questionsToAdd}
+                  wizardErrors={wizardErrors}
+                  onStartWizard={handleStartWizard}
+                  onNextQuestion={handleNextQuestion}
+                  onCancel={handleCancelWizard}
+                />
+              )}
 
               {/* University Subject Form */}
               {modalType === "university" && (
