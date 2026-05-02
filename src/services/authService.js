@@ -108,38 +108,6 @@ export const authService = {
   },
 };
 
-// Quiz Service
-export const quizService = {
-  // Submit Quiz Result
-  async submitQuiz(courseId, score, total) {
-    try {
-      const response = await fetch(`${API_URL}/quiz/submit`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ courseId, score, total }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to submit quiz");
-      }
-
-      // Update local user data
-      const user = authService.getStoredUser();
-      if (user) {
-        user.quizResults = data.quizResults;
-        localStorage.setItem("user", JSON.stringify(user));
-      }
-
-      return data;
-    } catch (error) {
-      console.error("Submit quiz error:", error);
-      throw error;
-    }
-  },
-};
-
 // Admin Service
 export const adminService = {
   // Get All Students
