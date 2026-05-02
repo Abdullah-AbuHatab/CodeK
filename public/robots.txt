@@ -1,3 +1,10 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /admin/manage
+Disallow: /login
+Disallow: /signup
+
+# Add your real sitemap URL once the site is deployed:
+# Sitemap: https://codek.example.com/sitemap.xml
