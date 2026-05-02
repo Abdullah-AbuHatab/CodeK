@@ -98,35 +98,55 @@ Instructions:
     <>
       {!isQuizActive && (
         <button
+          type="button"
           className={`chat-toggle-btn ${isOpen ? "hidden" : ""}`}
           onClick={() => setIsOpen(true)}
           title="Chat with AI Assistant"
+          aria-label="Open AI assistant chat"
+          aria-expanded={isOpen}
+          aria-controls="codek-chat-window"
         >
-          🤖
+          <span aria-hidden="true">🤖</span>
         </button>
       )}
 
       {isOpen && !isQuizActive && (
-        <div className="chat-window">
+        <div
+          id="codek-chat-window"
+          className="chat-window"
+          role="dialog"
+          aria-label="CodeK AI assistant"
+          aria-modal="false"
+        >
           <div className="chat-header">
             <div className="header-info">
-              <span className="online-dot"></span>
+              <span className="online-dot" aria-hidden="true"></span>
               <h3>CodeK Assistant</h3>
             </div>
-            <button className="close-btn" onClick={() => setIsOpen(false)}>
-              ×
+            <button
+              type="button"
+              className="close-btn"
+              onClick={() => setIsOpen(false)}
+              aria-label="Close chat"
+            >
+              <span aria-hidden="true">×</span>
             </button>
           </div>
 
-          <div className="chat-messages">
+          <div
+            className="chat-messages"
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+          >
             {messages.map((m, i) => (
               <div key={i} className={`chat-message ${m.role}`}>
                 <div className="message-content">{m.content}</div>
               </div>
             ))}
             {isLoading && (
-              <div className="chat-message assistant">
-                <div className="typing-indicator">
+              <div className="chat-message assistant" aria-label="Assistant is typing">
+                <div className="typing-indicator" aria-hidden="true">
                   <span></span>
                   <span></span>
                   <span></span>
@@ -137,7 +157,11 @@ Instructions:
           </div>
 
           <div className="chat-input-area">
+            <label htmlFor="codek-chat-input" className="visually-hidden">
+              Your question for the assistant
+            </label>
             <textarea
+              id="codek-chat-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your question..."
@@ -150,9 +174,11 @@ Instructions:
               }}
             />
             <button
+              type="button"
               className="chat-send-btn"
               onClick={sendMessage}
               disabled={isLoading || !input.trim()}
+              aria-label="Send message"
             >
               {isLoading ? "..." : "Send"}
             </button>

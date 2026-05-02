@@ -63,7 +63,7 @@ export default function CourseDetails() {
             ← Back to courses
           </button>
 
-          <header className="course-details-header">
+          <header className="course-details-header" lang="ar" dir="rtl">
             <h1>مواد الجامعة</h1>
             <p>اختر المادة لعرض تفاصيلها</p>
           </header>
@@ -144,7 +144,7 @@ export default function CourseDetails() {
           >
             ← Back to courses
           </button>
-          <header className="course-details-header">
+          <header className="course-details-header" lang="ar" dir="rtl">
             <h1>مواد الجامعة</h1>
             <p>اختر المادة لعرض تفاصيلها</p>
           </header>

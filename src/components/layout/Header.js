@@ -39,8 +39,15 @@ export default function Header() {
     <header className="container">
       {/* Logo + Mobile Menu Button */}
       <div className="logo-menu">
-        <button className="menu-btn" onClick={() => setOpen((v) => !v)}>
-          ☰
+        <button
+          type="button"
+          className="menu-btn"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={open}
+          aria-controls="mobile-nav"
+        >
+          <span aria-hidden="true">☰</span>
         </button>
         <h1 className="Pname">CodeK</h1>
       </div>
@@ -96,7 +103,7 @@ export default function Header() {
       </div>
 
       {/* Mobile Dropdown Menu */}
-      <div className={`mobile-dropdown ${open ? "open" : ""}`}>
+      <div id="mobile-nav" className={`mobile-dropdown ${open ? "open" : ""}`}>
         <NavLink to="/" end onClick={() => setOpen(false)}>
           {({ isActive }) => (
             <button className={isActive ? "active" : ""}>Home</button>
