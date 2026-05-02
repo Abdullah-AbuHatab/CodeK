@@ -1,70 +1,282 @@
-# Getting Started with Create React App
+# CodeK — Learn. Explore. Build.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A coding-education platform with hands-on courses in **Web Development**, **AI**, and
+**Cyber Security**, plus AI-powered quizzes, hints, and personalized
+learning roadmaps. Includes a public catalog, a student dashboard, an
+admin console, and a built-in tutor chatbot.
 
-## Available Scripts
+> Built as a graduation project. Frontend in React 19; backend in Express +
+> MongoDB; AI features powered by OpenRouter.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Course catalog** for Web Dev, AI, and Cyber Security tracks (Beginner →
+  Advanced) plus 12 university subjects with downloadable chapter files.
+- **AI tutor chatbot** that students can ping any time outside the quiz.
+- **Quiz system** that picks 10 random questions per attempt, with:
+  - Live AI hints per question (no spoilers).
+  - End-of-quiz performance analysis: strengths, weaknesses, and a
+    personalized 3–5 step learning roadmap.
+- **Auth** with JWT — separate `student` and `admin` roles.
+- **Admin dashboard** for CRUD over students, courses, university
+  subjects, and quiz questions.
+- **AI hints generated on demand** — no static hint data baked into the
+  bundle, so they're fresh every time.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🛠️ Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Layer | Tech |
+|---|---|
+| Frontend | React 19 (Create React App), React Router 7, MUI 7, AOS, EmailJS |
+| Backend | Node.js, Express 4, Mongoose 8 |
+| Database | MongoDB Atlas |
+| Auth | JWT + bcryptjs |
+| AI | OpenRouter (`gpt-3.5-turbo` by default) |
+| Security | Helmet, CORS allowlist, express-rate-limit, express-validator |
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📂 Project Structure
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+.
+├── backend/
+│   ├── data/quizData.js        # Question pool (seed-only, NOT shipped to browser)
+│   ├── middleware/validators.js
+│   ├── models/                 # Course, Quiz, UniversitySubject (Mongoose)
+│   ├── routes/quizRoutes.js
+│   ├── seedAdmin.js            # Create / reset the admin user
+│   ├── seedData.js             # Seed courses + subjects + quizzes
+│   ├── seedQuizzes.js          # Seed quizzes only
+│   ├── server.js               # Express app + every API route
+│   ├── .env.example
+│   └── package.json
+├── public/
+│   ├── index.html              # SEO + Open Graph + Twitter cards
+│   ├── manifest.json           # PWA manifest
+│   ├── og-image.png            # Social-share banner
+│   ├── favicon.ico, logo*.png  # Brand icons
+│   └── university/             # Chapter PDFs / PPTs
+├── src/
+│   ├── App.js                  # Routes + lazy-loaded pages
+│   ├── config.js               # API_URL from env
+│   ├── components/
+│   │   ├── FloatingChatBot.*   # AI tutor chatbot
+│   │   ├── common/
+│   │   │   ├── ErrorBoundary.js
+│   │   │   ├── PrivateRoute.js # Verifies JWT against /api/auth/me
+│   │   │   └── ScrollToTop.js
+│   │   └── layout/             # Header, Footer
+│   ├── context/QuizContext.js  # Hides the chatbot during quizzes
+│   ├── data/                   # Course + university metadata (small, kept on the client)
+│   ├── pages/                  # Home, About, Courses, Quiz, Auth/*, etc.
+│   └── services/               # authService, quizService, adminCourseService
+├── .env.example                # Frontend env template
+└── package.json
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🚀 Getting Started
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Prerequisites
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- Node.js 18+ and npm.
+- A MongoDB Atlas cluster (free tier is fine).
+- An OpenRouter API key — sign up at <https://openrouter.ai>.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 1. Clone
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+git clone <repo-url>
+cd "zero AI finall project"
+```
 
-## Learn More
+### 2. Backend
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+cd backend
+npm install
+cp .env.example .env
+# then edit backend/.env and fill in MONGODB_URI, JWT_SECRET, OPENROUTER_API_KEY,
+# ADMIN_USERNAME, ADMIN_PASSWORD, etc.
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+**Seed the database** (run once):
 
-### Code Splitting
+```bash
+node seedAdmin.js     # creates the initial admin user from .env
+node seedData.js      # populates courses, university subjects, quizzes
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+**Start the API:**
 
-### Analyzing the Bundle Size
+```bash
+npm run dev           # nodemon
+# or
+npm start             # plain node
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Server runs on `http://localhost:5000`.
 
-### Making a Progressive Web App
+### 3. Frontend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+cd ..
+npm install
+cp .env.example .env
+# .env defaults already point to http://localhost:5000/api — leave as-is for local dev
+npm start
+```
 
-### Advanced Configuration
+App runs on `http://localhost:3000`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+---
 
-### Deployment
+## 🔧 Environment Variables
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Backend (`backend/.env`)
 
-### `npm run build` fails to minify
+| Var | Purpose |
+|---|---|
+| `MONGODB_URI` | Atlas connection string |
+| `JWT_SECRET` | 64+ char random hex; used to sign tokens |
+| `PORT` | Default `5000` |
+| `NODE_ENV` | `development` / `production` |
+| `OPENROUTER_API_KEY` | API key for the AI features |
+| `ALLOWED_ORIGINS` | Comma-separated CORS allowlist |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_FULLNAME`, `ADMIN_EMAIL` | Used by `seedAdmin.js` |
+| `RATE_LIMIT_AUTH_*`, `RATE_LIMIT_AI_*`, `RATE_LIMIT_API_*` | Optional rate-limit tuning |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Generate a strong `JWT_SECRET` with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+### Frontend (`.env`)
+
+| Var | Purpose |
+|---|---|
+| `REACT_APP_API_URL` | Backend base URL. Default: `http://localhost:5000/api` |
+
+---
+
+## 📜 Available Scripts
+
+### Frontend (root)
+
+| Command | What it does |
+|---|---|
+| `npm start` | Dev server with hot reload (port 3000) |
+| `npm run build` | Production build into `build/` |
+| `npm test` | Jest test runner |
+
+### Backend (`backend/`)
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | nodemon — auto-restart on file changes |
+| `npm start` | plain `node server.js` |
+| `node seedAdmin.js` | Create / reset the admin user |
+| `node seedData.js` | Wipe and reseed all course / subject / quiz data |
+| `node seedQuizzes.js` | Reseed only the quizzes |
+| `node testConnection.cjs` | Quick MongoDB connectivity check |
+
+---
+
+## 🔐 Authentication & Roles
+
+- **Students** sign up via `/signup`, log in via `/login`, and land on
+  `/student`. They can take quizzes; results are saved against their user
+  record.
+- **The admin** is created from `seedAdmin.js` with credentials taken from
+  `.env`. There is **no hardcoded backdoor**. Admin uses the same
+  `/login` flow and is routed to `/admin` based on the `role` field.
+- `PrivateRoute` calls `GET /api/auth/me` on entry to confirm the JWT is
+  still valid, with a 60s `sessionStorage` cache to keep navigation fast.
+  Expired or revoked tokens result in a clean redirect to `/login`.
+
+---
+
+## 🤖 AI Integration
+
+All AI calls go through **`POST /api/chat`** on the backend, which
+forwards the prompt to OpenRouter. Three places use it:
+
+1. `FloatingChatBot` — open-ended Q&A while browsing the site.
+2. `Quiz` "AI Hint" button — short Socratic hint per question, never the
+   answer.
+3. `Quiz` end-of-attempt analysis — strengths, weaknesses, and a
+   personalized 3–5 step learning roadmap based on the actual answer
+   review.
+
+Hints are generated on demand — there is **no static `hint` field** on
+quiz questions, so each request produces a fresh, contextual hint.
+
+---
+
+## 📡 API Reference (high level)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| `POST` | `/api/auth/signup` | — | Public, rate-limited (5 / 15 min) |
+| `POST` | `/api/auth/login` | — | Public, rate-limited |
+| `GET` | `/api/auth/me` | JWT | Used by `PrivateRoute` |
+| `POST` | `/api/chat` | — | AI tutor, rate-limited (30 / min) |
+| `GET` | `/api/courses/public/all` | — | Public catalog |
+| `GET` | `/api/quizzes/:courseId` | — | Question pool for a course |
+| `POST` | `/api/quiz/submit` | JWT (student) | Save a quiz attempt |
+| `GET/POST/PUT/DELETE` | `/api/courses` | JWT (admin) | Course CRUD (accepts slug or `_id`) |
+| `GET/POST/PUT/DELETE` | `/api/university-subjects` | JWT (admin) | University subject CRUD |
+| `GET/POST/PUT/DELETE` | `/api/courses/:courseId/questions` | JWT (admin) | Per-course questions |
+| `GET/POST/PUT/DELETE` | `/api/students` | JWT (admin) | Student CRUD |
+| `GET` | `/api/admin/students`, `/api/admin/stats` | JWT (admin) | Dashboard helpers |
+
+Generic `/api` traffic is capped at 300 req / 15 min per IP.
+
+---
+
+## 🛡️ Security
+
+- **No hardcoded credentials.** Admin is in the database, hashed with
+  bcrypt; `seedAdmin.js` creates / resets it from `.env`.
+- **Rate limiting** on auth endpoints (5 / 15 min), AI endpoint
+  (30 / min), and a generic `/api/*` ceiling (300 / 15 min).
+- **CORS allowlist** via `ALLOWED_ORIGINS`. Requests from origins not on
+  the list get no CORS headers, so the browser blocks them.
+- **Input validation** with `express-validator` on every mutating
+  endpoint — the custom `isPlainString` check rejects MongoDB operator
+  objects, neutralizing trivial NoSQL-injection payloads.
+- **`helmet()`** for the standard security header set (HSTS, X-Frame-
+  Options, X-Content-Type-Options, etc.) and a 100 KB cap on JSON
+  bodies. `X-Powered-By` is suppressed.
+- **JWT** signed with a long random secret (`JWT_SECRET`). Tokens expire
+  after 7 days.
+- **PrivateRoute** verifies tokens against the backend, not just
+  localStorage, so a tampered local user object can't render protected
+  pages.
+
+---
+
+## 👥 Team
+
+| Member | Role |
+|---|---|
+| Mohammed Ibdah | Team Leader & Frontend Architect |
+| Mahmoud Al-Mahasneh | UI/UX Designer & Creative Dev |
+| Mark Haddad | System Logic & Backend Dev |
+| Abdullah Abu-hatab | Data Structure & Content Lead |
+| Omar Ashraf | React State & Hooks Specialist |
+| Khaled Dhdoli | Input Security & Validation |
+
+---
+
+## 📄 License
+
+License not yet declared. Pick one (MIT is a sensible default for a
+graduation project) and update this section.
