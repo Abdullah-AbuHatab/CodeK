@@ -241,10 +241,28 @@ export default function AdminManage() {
     setShowModal(true);
   };
 
+  // Textarea <-> array helpers: the topics / objectives fields are stored
+  // as arrays in the DB but edited as one-item-per-line text in the UI.
+  const arrayToText = (val) =>
+    Array.isArray(val) ? val.join("\n") : (val ?? "");
+  const textToArray = (val) =>
+    typeof val === "string"
+      ? val
+          .split(/\r?\n/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : Array.isArray(val)
+        ? val
+        : [];
+
   const handleEditCourse = (course) => {
     setModalType("course");
     setEditingCourse(course);
-    setCourseFormData(course);
+    setCourseFormData({
+      ...course,
+      topics: arrayToText(course.topics),
+      objectives: arrayToText(course.objectives),
+    });
     setShowModal(true);
   };
 
@@ -256,8 +274,13 @@ export default function AdminManage() {
         ? `${API_URL}/courses/${editingCourse._id}`
         : `${API_URL}/courses`;
 
-      // Auto-generate ID from title if empty
-      let courseDataToSave = { ...courseFormData };
+      // Auto-generate ID from title if empty, and turn the multi-line
+      // textareas back into the array shape the API/Mongoose expect.
+      let courseDataToSave = {
+        ...courseFormData,
+        topics: textToArray(courseFormData.topics),
+        objectives: textToArray(courseFormData.objectives),
+      };
       if (!courseDataToSave.id || courseDataToSave.id.trim() === "") {
         courseDataToSave.id = courseDataToSave.title
           .toLowerCase()
