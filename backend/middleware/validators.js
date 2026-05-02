@@ -133,6 +133,41 @@ const questionValidator = [
   handleValidation,
 ];
 
+const contactValidator = [
+  body("name")
+    .custom(isPlainString)
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Name must be 2-100 characters"),
+  body("email")
+    .custom(isPlainString)
+    .trim()
+    .isEmail()
+    .withMessage("Invalid email format")
+    .normalizeEmail(),
+  body("subject")
+    .optional({ checkFalsy: true })
+    .custom(isPlainString)
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage("Subject must be at most 200 characters"),
+  body("message")
+    .custom(isPlainString)
+    .trim()
+    .isLength({ min: 10, max: 2000 })
+    .withMessage("Message must be 10-2000 characters"),
+  handleValidation,
+];
+
+const replyValidator = [
+  body("message")
+    .custom(isPlainString)
+    .trim()
+    .isLength({ min: 5, max: 2000 })
+    .withMessage("Reply must be 5-2000 characters"),
+  handleValidation,
+];
+
 module.exports = {
   signupValidator,
   loginValidator,
@@ -142,4 +177,6 @@ module.exports = {
   courseValidator,
   universitySubjectValidator,
   questionValidator,
+  contactValidator,
+  replyValidator,
 };

@@ -1,12 +1,15 @@
 // src/components/pages/ContactPage.js
 import "aos/dist/aos.css";
-import { useState } from "react";
-import emailjs from "emailjs-com";
+import { useCallback, useState } from "react";
+import { complaintsService } from "../../services/complaintsService";
+import Notification from "../../components/common/Notification";
 import "./ContactPage.css";
 
 export default function ContactPage() {
   const [messagesReceived] = useState(1245);
   const [sending, setSending] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const dismissNotification = useCallback(() => setNotification(null), []);
 
   const faqs = [
     {
@@ -41,34 +44,45 @@ export default function ContactPage() {
     },
   ];
 
-  const sendEmail = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (sending) return;
     setSending(true);
 
-    emailjs
-      .sendForm(
-        "service_iokapgr",    // Service ID
-        "template_3b42gju",   // Template ID
-        e.target,
-        "O8vVEP2ll52ORjlfG"   // Public Key / User ID
-      )
-      .then(
-        (result) => {
-          console.log("EmailJS success:", result.text);
-          alert("Your message has been sent successfully ✅ Thank you for contacting us!");
-          e.target.reset();
-          setSending(false);
-        },
-        (error) => {
-          console.error("EmailJS error:", error);
-          alert("Oops! Something went wrong ❌ Check console for details.");
-          setSending(false);
-        }
-      );
+    const form = e.target;
+    const payload = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      subject: form.topic.value.trim(),
+      message: form.message.value.trim(),
+    };
+
+    try {
+      await complaintsService.submit(payload);
+      setNotification({
+        type: "success",
+        message: "Your message has been sent successfully. Thank you!",
+      });
+      form.reset();
+    } catch (error) {
+      console.error("Contact submit error:", error);
+      setNotification({
+        type: "error",
+        message:
+          error.message || "Could not send your message. Please try again.",
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
     <section className="contact-page">
+      <Notification
+        notification={notification}
+        onDismiss={dismissNotification}
+        durationMs={4000}
+      />
       <div className="contact-page__inner" data-aos="fade-up">
         {/* ===== Header ===== */}
         <header className="contact-page__header">
@@ -76,7 +90,7 @@ export default function ContactPage() {
           <p>
             Whether you have a question about courses, suggestions to improve
             the platform, or want to reach out regarding the project, drop us a
-            message and we'll get back to you as soon as possible 
+            message and we'll get back to you as soon as possible
           </p>
           <div className="contact-page__badge">
              {messagesReceived.toLocaleString()} messages answered
@@ -95,8 +109,8 @@ export default function ContactPage() {
             <ul>
               <li>
                  <strong>Email:</strong>{" "}
-                <a href="mailto:gradgenius.team@gmail.com">
-                  mokabratxd@gmail.com
+                <a href="mailto:abdullahabuhatab0@gmail.com">
+                  abdullahabuhatab0@gmail.com
                 </a>
               </li>
               <li>
@@ -104,12 +118,12 @@ export default function ContactPage() {
               </li>
               <li>
                  <strong>Project:</strong> CodeK Learning Platform
-              </li> 
+              </li>
             </ul>
           </aside>
 
           {/* ===== Form Section ===== */}
-          <form className="contact-page__form" onSubmit={sendEmail}>
+          <form className="contact-page__form" onSubmit={handleSubmit}>
             <div className="field">
               <label htmlFor="name">Full Name</label>
               <input
@@ -149,6 +163,7 @@ export default function ContactPage() {
                 name="message"
                 rows="4"
                 required
+                minLength={10}
                 placeholder="Write the details of your question or suggestion here..."
               ></textarea>
             </div>

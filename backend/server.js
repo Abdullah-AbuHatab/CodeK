@@ -12,6 +12,12 @@ const quizRoutes = require("./routes/quizRoutes");
 const Quiz = require("./models/Quiz");
 const Course = require("./models/Course");
 const UniversitySubject = require("./models/UniversitySubject");
+const Complaint = require("./models/Complaint");
+const {
+  sendEmail,
+  buildComplaintNotificationHtml,
+  buildReplyHtml,
+} = require("./services/brevo");
 const {
   signupValidator,
   loginValidator,
@@ -21,6 +27,8 @@ const {
   courseValidator,
   universitySubjectValidator,
   questionValidator,
+  contactValidator,
+  replyValidator,
 } = require("./middleware/validators");
 
 const app = express();
@@ -63,6 +71,19 @@ const apiLimiter = rateLimit({
   max: Number(process.env.RATE_LIMIT_API_MAX) || 300,
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+// Contact form: low ceiling so a single visitor can't flood the admin inbox
+// (and the Brevo quota) by reposting the form. 5 successful submits per IP
+// per 15 minutes is generous for legitimate use.
+const contactLimiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_CONTACT_WINDOW_MS) || 15 * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_CONTACT_MAX) || 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many messages from this IP. Please try again in 15 minutes.",
+  },
 });
 
 // 🌐 CORS: only allow trusted origins. Configure via ALLOWED_ORIGINS
@@ -881,6 +902,186 @@ app.delete(
       res.json({ message: "Question deleted successfully" });
     } catch (error) {
       console.error("Delete question error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// ==================== COMPLAINTS / CONTACT ROUTES ====================
+
+// Public: visitor submits the contact form. We persist the complaint first
+// so it's never lost, then attempt the Brevo notification as best-effort.
+// The response is the same whether email succeeds or fails — UX-wise the
+// visitor only cares that we got the message.
+app.post("/api/contact", contactLimiter, contactValidator, async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    const complaint = new Complaint({
+      name,
+      email,
+      subject: subject || "",
+      message,
+    });
+    await complaint.save();
+
+    const recipient = process.env.CONTACT_RECIPIENT_EMAIL;
+    if (recipient) {
+      const emailSubject = subject
+        ? `[CodeK Contact] ${subject}`
+        : `[CodeK Contact] New message from ${name}`;
+      sendEmail({
+        to: recipient,
+        subject: emailSubject,
+        htmlContent: buildComplaintNotificationHtml(complaint),
+        replyTo: email,
+      }).then((result) => {
+        if (!result.ok && !result.skipped) {
+          console.warn(
+            `⚠️  Complaint ${complaint._id} saved but admin notification failed: ${result.error}`,
+          );
+        }
+      });
+    } else {
+      console.warn(
+        "⚠️  CONTACT_RECIPIENT_EMAIL not set — complaint saved without admin notification",
+      );
+    }
+
+    res.status(201).json({
+      message: "Your message has been received. We'll get back to you soon.",
+      id: complaint._id,
+    });
+  } catch (error) {
+    console.error("Submit complaint error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Admin list: returns every complaint, newest first. The dashboard renders
+// a status badge, so we don't paginate yet — at the volumes a graduation
+// project sees, a single fetch is fine.
+app.get("/api/admin/complaints", authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied: Admin only" });
+    }
+    const complaints = await Complaint.find().sort({ createdAt: -1 });
+    res.json(complaints);
+  } catch (error) {
+    console.error("List complaints error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Admin: mark as read. Used when the admin opens a complaint detail view
+// so unread badges clear without forcing them to reply.
+app.patch(
+  "/api/admin/complaints/:id/read",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Access denied: Admin only" });
+      }
+
+      const complaint = await Complaint.findById(req.params.id);
+      if (!complaint) {
+        return res.status(404).json({ message: "Complaint not found" });
+      }
+
+      // Only bump from "new" — once an admin has replied, status stays
+      // "replied" instead of regressing to "read" on a re-open.
+      if (complaint.status === "new") {
+        complaint.status = "read";
+        await complaint.save();
+      }
+
+      res.json(complaint);
+    } catch (error) {
+      console.error("Mark complaint read error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// Admin: send a reply. The email goes via Brevo; whether it succeeds or
+// fails, we still record the reply on the complaint document so the admin
+// has a permanent log (with the error captured if delivery failed).
+app.post(
+  "/api/admin/complaints/:id/reply",
+  authenticateToken,
+  replyValidator,
+  async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Access denied: Admin only" });
+      }
+
+      const complaint = await Complaint.findById(req.params.id);
+      if (!complaint) {
+        return res.status(404).json({ message: "Complaint not found" });
+      }
+
+      const { message } = req.body;
+      const result = await sendEmail({
+        to: complaint.email,
+        subject: complaint.subject
+          ? `Re: ${complaint.subject}`
+          : "Re: Your message to CodeK",
+        htmlContent: buildReplyHtml({ complaint, replyMessage: message }),
+      });
+
+      complaint.replies.push({
+        message,
+        sentTo: complaint.email,
+        deliveredVia: result.skipped ? "not-sent" : "brevo",
+        brevoMessageId: result.messageId,
+        error: result.ok ? undefined : result.error,
+      });
+      complaint.status = "replied";
+      await complaint.save();
+
+      if (result.ok) {
+        return res.json({
+          message: "Reply sent successfully",
+          complaint,
+        });
+      }
+
+      // Email failed but the reply is logged. Surface the failure so the
+      // admin UI can show a "saved but not delivered" warning.
+      return res.status(502).json({
+        message: result.skipped
+          ? "Reply saved, but Brevo is not configured on the server."
+          : `Reply saved, but email delivery failed: ${result.error}`,
+        complaint,
+      });
+    } catch (error) {
+      console.error("Reply to complaint error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// Admin: delete a complaint and its reply history.
+app.delete(
+  "/api/admin/complaints/:id",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Access denied: Admin only" });
+      }
+
+      const complaint = await Complaint.findByIdAndDelete(req.params.id);
+      if (!complaint) {
+        return res.status(404).json({ message: "Complaint not found" });
+      }
+
+      res.json({ message: "Complaint deleted successfully" });
+    } catch (error) {
+      console.error("Delete complaint error:", error);
       res.status(500).json({ message: "Server error" });
     }
   },

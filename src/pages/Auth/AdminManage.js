@@ -11,6 +11,9 @@ import QuestionForm from "./admin/QuestionForm";
 import QuestionWizard from "./admin/QuestionWizard";
 import SubjectsTab from "./admin/SubjectsTab";
 import SubjectForm from "./admin/SubjectForm";
+import ComplaintsTab from "./admin/ComplaintsTab";
+import ComplaintDetailsModal from "./admin/ComplaintDetailsModal";
+import { complaintsService } from "../../services/complaintsService";
 import "./AdminManage.css";
 
 export default function AdminManage() {
@@ -29,6 +32,10 @@ export default function AdminManage() {
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [editingUniversitySubject, setEditingUniversitySubject] =
     useState(null);
+  const [complaints, setComplaints] = useState([]);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [complaintStatusFilter, setComplaintStatusFilter] = useState("all");
+  const [sendingReply, setSendingReply] = useState(false);
   const navigate = useNavigate();
 
   // Wizard state for adding multiple questions
@@ -127,10 +134,93 @@ export default function AdminManage() {
       if (studentsRes.ok) setStudents(await studentsRes.json());
       if (coursesRes.ok) setCourses(await coursesRes.json());
       if (universityRes.ok) setUniversitySubjects(await universityRes.json());
+
+      try {
+        const complaintsList = await complaintsService.list();
+        setComplaints(complaintsList);
+      } catch (err) {
+        console.error("Error fetching complaints:", err);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ==================== COMPLAINT HANDLERS ====================
+
+  const handleViewComplaint = async (complaint) => {
+    setSelectedComplaint(complaint);
+    setModalType("complaint");
+    setShowModal(true);
+
+    if (complaint.status === "new") {
+      try {
+        const updated = await complaintsService.markAsRead(complaint._id);
+        setComplaints((prev) =>
+          prev.map((c) => (c._id === updated._id ? updated : c)),
+        );
+        setSelectedComplaint(updated);
+      } catch (err) {
+        console.error("Mark complaint read error:", err);
+      }
+    }
+  };
+
+  const handleSendReply = async (message) => {
+    if (!selectedComplaint) return false;
+    setSendingReply(true);
+    try {
+      const result = await complaintsService.reply(
+        selectedComplaint._id,
+        message,
+      );
+      const updated = result.complaint || result;
+      setComplaints((prev) =>
+        prev.map((c) => (c._id === updated._id ? updated : c)),
+      );
+      setSelectedComplaint(updated);
+      setNotification({
+        type: "success",
+        message: "Reply sent successfully.",
+      });
+      return true;
+    } catch (err) {
+      // 502 means saved-but-undelivered: update the row from the response
+      // payload so the failed reply still shows in the thread.
+      if (err.data && err.data.complaint) {
+        const updated = err.data.complaint;
+        setComplaints((prev) =>
+          prev.map((c) => (c._id === updated._id ? updated : c)),
+        );
+        setSelectedComplaint(updated);
+      }
+      setNotification({
+        type: "error",
+        message: err.message || "Failed to send reply.",
+      });
+      return false;
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
+  const handleDeleteComplaint = async (id, name) => {
+    if (!window.confirm(`Delete the complaint from ${name}?`)) return;
+    try {
+      await complaintsService.remove(id);
+      setComplaints((prev) => prev.filter((c) => c._id !== id));
+      setNotification({
+        type: "success",
+        message: "Complaint deleted.",
+      });
+    } catch (err) {
+      console.error("Delete complaint error:", err);
+      setNotification({
+        type: "error",
+        message: err.message || "Failed to delete complaint.",
+      });
     }
   };
 
@@ -652,6 +742,20 @@ export default function AdminManage() {
       subject?.semester?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  const filteredComplaints = complaints.filter((c) => {
+    const matchesStatus =
+      complaintStatusFilter === "all" || c.status === complaintStatusFilter;
+    if (!matchesStatus) return false;
+    const term = searchTerm.toLowerCase();
+    if (!term) return true;
+    return (
+      c.name?.toLowerCase().includes(term) ||
+      c.email?.toLowerCase().includes(term) ||
+      c.subject?.toLowerCase().includes(term) ||
+      c.message?.toLowerCase().includes(term)
+    );
+  });
+
   // Create course map for titles
   const courseMap = courses.reduce((map, course) => {
     map[course.id] = course.title;
@@ -705,6 +809,27 @@ export default function AdminManage() {
           >
             University Subjects
           </button>
+          <button
+            className={`tab ${activeTab === "complaints" ? "active" : ""}`}
+            onClick={() => setActiveTab("complaints")}
+          >
+            Complaints
+            {complaints.some((c) => c.status === "new") && (
+              <span
+                style={{
+                  marginLeft: "8px",
+                  backgroundColor: "#dc2626",
+                  color: "white",
+                  padding: "2px 8px",
+                  borderRadius: "999px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                }}
+              >
+                {complaints.filter((c) => c.status === "new").length}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -747,6 +872,19 @@ export default function AdminManage() {
             />
           )}
 
+          {/* Complaints Tab */}
+          {activeTab === "complaints" && (
+            <ComplaintsTab
+              complaints={filteredComplaints}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={complaintStatusFilter}
+              onStatusFilterChange={setComplaintStatusFilter}
+              onView={handleViewComplaint}
+              onDelete={handleDeleteComplaint}
+            />
+          )}
+
           {/* Quiz Management */}
           {selectedCourseForQuiz && (
             <QuizQuestionsManager
@@ -769,7 +907,7 @@ export default function AdminManage() {
             }}
           >
             <div
-              className={`modal-content ${modalType === "course" || modalType === "university" ? "modal-large" : ""}`}
+              className={`modal-content ${modalType === "course" || modalType === "university" || modalType === "complaint" ? "modal-large" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-header">
@@ -784,12 +922,14 @@ export default function AdminManage() {
                     (editingUniversitySubject
                       ? "Edit University Subject"
                       : "Add University Subject")}
+                  {modalType === "complaint" && "Complaint Details"}
                 </h2>
                 <button
                   className="close-btn"
                   onClick={() => {
                     setShowModal(false);
                     setModalType(null);
+                    setSelectedComplaint(null);
                   }}
                 >
                   ×
@@ -853,6 +993,20 @@ export default function AdminManage() {
                   editingSubject={editingUniversitySubject}
                   onSubmit={handleSaveUniversitySubject}
                   onCancel={() => setShowModal(false)}
+                />
+              )}
+
+              {/* Complaint Details */}
+              {modalType === "complaint" && (
+                <ComplaintDetailsModal
+                  complaint={selectedComplaint}
+                  onSendReply={handleSendReply}
+                  onCancel={() => {
+                    setShowModal(false);
+                    setModalType(null);
+                    setSelectedComplaint(null);
+                  }}
+                  sending={sendingReply}
                 />
               )}
             </div>

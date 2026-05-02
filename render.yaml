@@ -44,3 +44,11 @@ services:
         sync: false
       - key: RATE_LIMIT_AUTH_MAX
         value: "10"
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_SENDER_NAME
+        value: CodeK Support
+      - key: CONTACT_RECIPIENT_EMAIL
+        sync: false
