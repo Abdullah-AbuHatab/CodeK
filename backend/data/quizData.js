@@ -1,6 +1,10 @@
-// src/components/pages/quizData.js
+// backend/data/quizData.js
+// Master pool of quiz questions used by seedQuizzes.js / seedData.js to
+// populate the MongoDB `quizzes` collection. Runtime quiz delivery to the
+// frontend goes through GET /api/quizzes/:courseId — this file is not
+// shipped to the browser bundle.
 
-export const QUIZZES = {
+const QUIZZES = {
   "web-101": [
     {
       id: 1,
@@ -2789,3 +2793,5 @@ export const QUIZZES = {
     },
   ],
 };
+
+module.exports = { QUIZZES };

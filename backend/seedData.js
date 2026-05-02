@@ -8,7 +8,7 @@ require("dotenv").config();
 // Import data from frontend
 const { COURSES } = require("../src/data/coursesData");
 const { UNIVERSITY_SUBJECTS } = require("../src/data/universitySubjectsData");
-const { QUIZZES } = require("../src/data/quizData");
+const { QUIZZES } = require("./data/quizData");
 
 async function seedData() {
   try {

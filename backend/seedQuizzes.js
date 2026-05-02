@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Quiz = require("./models/Quiz");
 require("dotenv").config();
 
-const { QUIZZES } = require("../src/data/quizData");
+const { QUIZZES } = require("./data/quizData");
 
 mongoose
   .connect(process.env.MONGODB_URI)
