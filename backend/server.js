@@ -10,6 +10,16 @@ const quizRoutes = require("./routes/quizRoutes");
 const Quiz = require("./models/Quiz");
 const Course = require("./models/Course");
 const UniversitySubject = require("./models/UniversitySubject");
+const {
+  signupValidator,
+  loginValidator,
+  chatValidator,
+  quizSubmitValidator,
+  studentValidator,
+  courseValidator,
+  universitySubjectValidator,
+  questionValidator,
+} = require("./middleware/validators");
 
 const app = express();
 
@@ -153,7 +163,7 @@ app.get("/", (req, res) => {
 });
 
 // 🤖 Test Chat Endpoint
-app.post("/api/chat", aiLimiter, async (req, res) => {
+app.post("/api/chat", aiLimiter, chatValidator, async (req, res) => {
   try {
     const { prompt } = req.body;
 
@@ -215,7 +225,7 @@ app.post("/api/chat", aiLimiter, async (req, res) => {
 });
 
 // 1. Sign Up
-app.post("/api/auth/signup", authLimiter, async (req, res) => {
+app.post("/api/auth/signup", authLimiter, signupValidator, async (req, res) => {
   try {
     const { username, password, fullName, email, phone } = req.body;
 
@@ -288,7 +298,7 @@ app.post("/api/auth/signup", authLimiter, async (req, res) => {
 });
 
 // 2. Login
-app.post("/api/auth/login", authLimiter, async (req, res) => {
+app.post("/api/auth/login", authLimiter, loginValidator, async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -351,7 +361,7 @@ app.get("/api/auth/me", authenticateToken, async (req, res) => {
 });
 
 // 4. Submit Quiz Result
-app.post("/api/quiz/submit", authenticateToken, async (req, res) => {
+app.post("/api/quiz/submit", authenticateToken, quizSubmitValidator, async (req, res) => {
   try {
     const { courseId, score, total } = req.body;
 
@@ -445,7 +455,7 @@ app.get("/api/students", authenticateToken, async (req, res) => {
 });
 
 // Create student
-app.post("/api/students", authenticateToken, async (req, res) => {
+app.post("/api/students", authenticateToken, studentValidator, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied: Admin only" });
@@ -485,7 +495,7 @@ app.post("/api/students", authenticateToken, async (req, res) => {
 });
 
 // Update student
-app.put("/api/students/:id", authenticateToken, async (req, res) => {
+app.put("/api/students/:id", authenticateToken, studentValidator, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied: Admin only" });
@@ -560,7 +570,7 @@ app.get("/api/courses", authenticateToken, async (req, res) => {
 });
 
 // Create course
-app.post("/api/courses", authenticateToken, async (req, res) => {
+app.post("/api/courses", authenticateToken, courseValidator, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied: Admin only" });
@@ -590,7 +600,7 @@ app.post("/api/courses", authenticateToken, async (req, res) => {
 });
 
 // Update course
-app.put("/api/courses/:id", authenticateToken, async (req, res) => {
+app.put("/api/courses/:id", authenticateToken, courseValidator, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied: Admin only" });
@@ -647,7 +657,7 @@ app.get("/api/university-subjects", authenticateToken, async (req, res) => {
 });
 
 // Create university subject
-app.post("/api/university-subjects", authenticateToken, async (req, res) => {
+app.post("/api/university-subjects", authenticateToken, universitySubjectValidator, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied: Admin only" });
@@ -667,7 +677,7 @@ app.post("/api/university-subjects", authenticateToken, async (req, res) => {
 });
 
 // Update university subject
-app.put("/api/university-subjects/:id", authenticateToken, async (req, res) => {
+app.put("/api/university-subjects/:id", authenticateToken, universitySubjectValidator, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied: Admin only" });
@@ -746,6 +756,7 @@ app.get(
 app.post(
   "/api/courses/:courseId/questions",
   authenticateToken,
+  questionValidator,
   async (req, res) => {
     try {
       if (req.user.role !== "admin") {
@@ -773,6 +784,7 @@ app.post(
 app.put(
   "/api/courses/:courseId/questions/:questionId",
   authenticateToken,
+  questionValidator,
   async (req, res) => {
     try {
       if (req.user.role !== "admin") {
