@@ -46,7 +46,7 @@ export default function Signup() {
     try {
       await authService.signup({ fullName, email, phone, username, password });
       window.dispatchEvent(new Event("storage"));
-      navigate("/courses");
+      navigate("/");
     } catch (err) {
       setError(err.message || "Signup failed. Please try again.");
     } finally {
