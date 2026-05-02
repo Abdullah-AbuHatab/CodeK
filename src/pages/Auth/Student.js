@@ -3,7 +3,6 @@
 // ============================================
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Student.css";
 
 export default function Student() {
   const [user, setUser] = useState(null);
