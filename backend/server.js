@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const helmet = require("helmet");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
@@ -78,8 +79,20 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 };
 
+// 🛡️ Security headers (X-Frame-Options, X-Content-Type-Options, HSTS, etc).
+// CSP is intentionally disabled here — it conflicts with the React dev
+// server during local development. Re-enable in production with a tight
+// directive set tuned to the deployed frontend.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
+app.disable("x-powered-by");
+
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
 app.use("/api", apiLimiter);
 app.use("/api/quizzes", quizRoutes);
 
