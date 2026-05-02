@@ -1,0 +1,314 @@
+/* === Admin Dashboard === */
+.admin-dashboard {
+  padding: 40px;
+  background-color: #0a0f1a;
+  min-height: 100vh;
+  color: #f8fafc;
+  font-family: "Segoe UI", sans-serif;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Header (Welcome Admin) === */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.admin-header div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.admin-header h1 {
+  font-size: 2.2rem;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+/* Admin Actions */
+.admin-actions {
+  display: flex;
+  gap: 15px;
+}
+
+/* Manage Button */
+.manage-btn {
+  padding: 10px 20px;
+  background-color: #0ea5e9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  height: fit-content;
+  transition: background-color 0.3s;
+}
+
+.manage-btn:hover {
+  background-color: #0284c7;
+}
+
+/* Logout Button */
+.logout-btn {
+  padding: 10px 20px;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  height: fit-content;
+  transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #b91c1c;
+}
+
+/* === Stats Cards === */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 60px;
+}
+
+.card {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  padding: 30px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px solid #2d3748;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(14, 165, 233, 0.1),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.card:hover::before {
+  left: 100%;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: #0ea5e9;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card h3 {
+  color: #e2e8f0;
+  font-size: 1rem;
+  text-transform: uppercase;
+  margin-bottom: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.card p {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #38bdf8;
+  margin: 0;
+}
+
+/* === Sections === */
+.section {
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.section h2 {
+  font-size: 1.5rem;
+  color: #e2e8f0;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 10px;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+/* Section Header with Search */
+.section-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+/* === Search Input === */
+.search-input {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 50px;
+  width: 100%;
+  max-width: 400px;
+  outline: none;
+  text-align: center;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
+  max-width: 450px;
+}
+
+.search-input::placeholder {
+  color: #6b7280;
+}
+
+/* === Tables === */
+.table-wrapper {
+  overflow-x: auto;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  border-radius: 16px;
+  border: 1px solid #2d3748;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  position: relative;
+}
+
+.table-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0ea5e9 0%, #06b6d4 50%, #0ea5e9 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+  position: relative;
+}
+
+thead tr {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  position: relative;
+}
+
+th,
+td {
+  padding: 18px 20px;
+  text-align: left;
+  border-bottom: 1px solid #4b5563;
+  transition: all 0.3s ease;
+}
+
+th {
+  color: #e2e8f0;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+
+th::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+th:hover::after {
+  transform: scaleX(1);
+}
+
+td {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+}
+
+tbody tr {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+tbody tr:hover {
+  background: linear-gradient(135deg, #1e293b 0%, #374151 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+tbody tr:hover td {
+  color: #f8fafc;
+}
+
+.student-name {
+  color: #38bdf8;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Subtle hover effect */
+.table-wrapper:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.text-muted {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* === Responsive Mobile === */
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 20px;
+  }
+  .search-input {
+    max-width: 100%;
+  }
+  .admin-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+}

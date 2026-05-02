@@ -1,0 +1,148 @@
+/* نفس الثيم المستخدم في الهيدر والهوم */
+.footer {
+  background: #0f172a; /* متناسق مع تدرج الهيدر الداكن */
+  color: #e2e8f0;
+  padding: 40px 20px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.2fr;
+  gap: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.footer__brand h3 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+.footer__brand p {
+  color: #94a3b8; /* مستخدم عندك في home للنص الثانوي */
+}
+
+.footer__links h4,
+.footer__news h4 {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #e2e8f0;
+}
+
+.footer__links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.footer__links li {
+  margin: 8px 0;
+}
+
+.footer__links a {
+  color: #e2e8f0;
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 2px;
+}
+.footer__links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0%;
+  height: 2px;
+  background: #38bdf8;
+  transition: width 0.25s ease;
+}
+.footer__links a:hover::after {
+  width: 100%;
+} /* نفس روحية hover اللي في الأزرار */
+
+.footer__form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.footer__form input {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  width: 240px;
+  background: #0a0f1a; /* قريب من خلفية الصفحة */
+  color: #e2e8f0;
+  outline: 1px solid rgba(255, 255, 255, 0.1);
+}
+.footer__form input::placeholder {
+  color: #94a3b8;
+}
+
+.footer__form button {
+  background: #38bdf8; /* لون البراند المستخدم عندك */
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #0f172a;
+}
+.footer__form button:hover {
+  opacity: 0.95;
+}
+
+.footer__social {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.footer__social a {
+  color: #94a3b8;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.footer__social a:hover {
+  color: #0f172a;
+  background: #38bdf8;
+  border-color: #38bdf8;
+}
+
+.footer__bar {
+  max-width: 1100px;
+  margin: 24px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.footer__bar small {
+  color: #94a3b8;
+}
+
+.back-to-top {
+  background: transparent;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.back-to-top:hover {
+  background: #1e293b; /* نفس بطاقات الكورسات */
+  border-color: #38bdf8;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .footer__grid {
+    grid-template-columns: 1fr;
+  }
+  .footer__bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

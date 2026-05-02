@@ -1,0 +1,329 @@
+/* ===========================
+   Variables
+=========================== */
+:root {
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --brand: #38bdf8;
+  --card-bg: #1e293b;
+  --assessment-bg: #22324a;
+  --aside-bg: #111b2c;
+  --accent: #38bdf8;
+  --danger: #f87171;
+}
+
+/* ===========================
+   General Page
+=========================== */
+.course-details-page {
+  min-height: 88svh;
+  padding: 40px 16px 60px;
+  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+}
+
+.course-details-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ===========================
+   Back Button
+=========================== */
+.back-btn {
+  background: transparent;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  color: var(--text);
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: 0.25s ease;
+}
+
+.back-btn:hover {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+}
+
+/* ===========================
+   Header
+=========================== */
+.course-details-header {
+  margin-bottom: 30px;
+}
+
+.course-details-header h1 {
+  font-size: clamp(28px, 5vw, 36px);
+  margin: 8px 0;
+}
+
+.course-details-header .badge {
+  color: var(--brand);
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.course-details-header .duration {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.course-pill {
+  display: inline-block;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-right: 6px;
+}
+
+.course-pill.category {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+.level-beginner {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.level-intermediate {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.level-advanced {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* ===========================
+   Layout
+=========================== */
+.course-details-layout {
+  display: grid;
+  grid-template-columns: 2.1fr 0.9fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.course-main section {
+  margin-bottom: 30px;
+  background: var(--card-bg);
+  padding: 20px 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.course-main h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--brand);
+}
+
+.course-main p {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.course-main ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ===========================
+   Assessment Section
+=========================== */
+.assessment-info {
+  background: var(--assessment-bg);
+  border-left: 4px solid var(--brand);
+}
+
+.assessment-info ul {
+  margin-top: 8px;
+  list-style: inside disc;
+}
+
+/* ===========================
+   Aside / Course Summary
+=========================== */
+.course-side-card {
+  background: var(--aside-bg);
+  border-radius: 14px;
+  padding: 20px 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.course-side-card h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: var(--brand);
+}
+
+.course-side-card ul {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.course-side-card li + li {
+  margin-top: 6px;
+}
+
+.requirements {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+/* ===========================
+   Start Assessment Button
+=========================== */
+.enroll-btn {
+  width: 100%;
+  border-radius: 999px;
+  border: none;
+  background: var(--brand);
+  color: #0f172a;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.enroll-btn:hover {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--brand);
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+}
+
+/* ===========================
+   Not Found
+=========================== */
+.not-found {
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+@media (max-width: 820px) {
+  .course-details-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .course-main section {
+    margin-bottom: 20px;
+  }
+}
+/* ===========================
+   Subject Cards (University)
+=========================== */
+.subject-card {
+  background: #1a1f2e;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.subject-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.subject-card h2 {
+  font-size: 18px;
+  color: #38bdf8;
+  margin-bottom: 6px;
+}
+
+.subject-card p {
+  color: #94a3b8;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* ===========================
+   Chapters inside Subjects
+=========================== */
+.subject-chapters {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chapter-card {
+  background: #0f172a;
+  border-radius: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  transition: 0.2s ease, transform 0.2s ease;
+}
+
+.chapter-card:hover {
+  background: #1e293b;
+  transform: translateY(-2px);
+}
+
+.chapter-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #38bdf8;
+  margin: 0 0 4px 0;
+}
+
+.chapter-file {
+  font-size: 13px;
+  color: #94a3b8;
+  text-decoration: underline;
+}
+
+.chapter-file:hover {
+  color: #38bdf8;
+}
+
+/* ===========================
+   Button
+=========================== */
+.course-card__btn {
+  margin-top: 10px;
+  background: #38bdf8;
+  color: #0f172a;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.course-card__btn:hover {
+  background: transparent;
+  color: #38bdf8;
+  border: 1px solid #38bdf8;
+}
+
+/* ===========================
+   Grid Layout
+=========================== */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}

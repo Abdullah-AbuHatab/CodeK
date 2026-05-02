@@ -1,0 +1,384 @@
+:root {
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --brand: #38bdf8;
+  --card: #1e293b;
+}
+* {
+  scroll-behavior: smooth;
+}
+
+/* ============================================
+   📱 الأساسيات العامة
+============================================ */
+.full {
+  min-height: 88svh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+#courses,
+#why,
+#sub {
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-margin-top: 80px;
+}
+
+/* ============================================
+   🎨 الخلفيات (تدرجات الأقسام) — لا تتغير
+============================================ */
+.band-hero {
+  background:
+    radial-gradient(
+      900px 420px at 50% -15%,
+      rgba(56, 189, 248, 0.18),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #0f172a 0%, #16243a 100%);
+}
+
+.band-courses {
+  background: linear-gradient(180deg, #16243a 0%, #1a2740 100%);
+}
+
+.band-subscribe {
+  background: linear-gradient(180deg, #192438 0%, #111b2c 100%);
+}
+
+/* ============================================
+   🦸 قسم الـ Hero
+============================================ */
+.get-started {
+  padding: 0 16px 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--text);
+}
+
+.get-started h1 {
+  font-size: clamp(32px, 8vw, 60px);
+  line-height: 1.05;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.get-started p {
+  font-size: clamp(14px, 2.2vw, 26px);
+  color: var(--muted);
+  margin-top: 8px;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+}
+
+.get-started button {
+  background: var(--brand);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  margin-top: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.get-started button:hover {
+  background: transparent !important;
+  outline: 1px solid var(--brand);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+}
+
+.quick-bullets {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  color: var(--muted);
+  margin-top: 24px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeUp 0.8s forwards 0.3s;
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cta-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.btn-ghost {
+  background: transparent;
+  outline: 1px solid var(--brand);
+  color: var(--text);
+  transition:
+    0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(56, 189, 248, 0.1);
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+/* ============================================
+   📚 قسم الكورسات
+============================================ */
+
+.courses-intro {
+  text-align: center;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.courses-intro h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--brand);
+}
+
+.courses-intro p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.courses-intro .hl,
+.courses-hint .hl {
+  position: relative;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.box {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 60px 20px;
+}
+
+.box div {
+  background: var(--card);
+  color: var(--text);
+  padding: 28px 24px 36px;
+  border-radius: 12px;
+  width: 300px;
+  min-height: 230px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.4s ease,
+    box-shadow 0.4s ease,
+    background 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.box div:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(180deg, var(--card), #22324a);
+}
+
+.box div h3 {
+  font-size: 22px;
+  margin: 8px 0 4px;
+  transition: transform 0.4s ease;
+}
+
+.box div p {
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  transition: transform 0.4s ease;
+}
+
+.box div:hover h3,
+.box div:hover p {
+  transform: translateY(-12px);
+  opacity: 0.9;
+}
+
+.box div button {
+  background: var(--brand);
+  border: none;
+  border-radius: 6px;
+  margin-top: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease;
+}
+
+.box div button:hover {
+  background: transparent;
+  outline: 1px solid var(--brand);
+  transform: translateY(-2px);
+}
+
+.card-details {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+  text-align: left;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.box div:hover .card-details li {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeList 0.4s forwards;
+  animation-delay: calc(var(--i) * 0.1s);
+}
+
+@keyframes fadeList {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.box div:hover .card-details {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.courses-hint {
+  text-align: center;
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ============================================
+   💡 قسم Why Choose Us
+============================================ */
+.why-wrap {
+  text-align: center;
+}
+
+.why-wrap h2 {
+  color: var(--text);
+}
+
+.why-choose {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.why-choose div {
+  background: #0f172a;
+  color: var(--text);
+  border-bottom: 3px solid var(--brand);
+  padding: 20px 16px 10px;
+  width: 250px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.why-choose div:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* ============================================
+   📩 قسم Subscribe
+============================================ */
+.subscribe {
+  text-align: center;
+  color: var(--text);
+}
+
+.subscribe p {
+  color: var(--muted);
+}
+
+.subscribe-box {
+  margin-top: 20px;
+}
+
+.subscribe input {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  margin-right: 10px;
+  width: 240px;
+  background: #0f172a;
+  color: var(--text);
+  outline: 1px solid rgba(255, 255, 255, 0.08);
+  transition:
+    outline 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.subscribe input:focus {
+  outline: 1px solid var(--brand);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.subscribe button {
+  background: var(--brand);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.subscribe button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+}
+
+/* ============================================
+   📱 Responsive
+============================================ */
+@media (max-width: 768px) {
+  .box,
+  .why-choose {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .box div,
+  .why-choose div {
+    width: 90%;
+    max-width: 400px;
+  }
+}

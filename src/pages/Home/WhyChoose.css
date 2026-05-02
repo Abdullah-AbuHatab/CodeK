@@ -1,0 +1,225 @@
+:root {
+  --bg: linear-gradient(180deg, #1a2740 0%, #1e293b 50%, #192438 100%);
+  --panel: #1a2336;
+  --text: #e5e7eb;
+  --muted: #a3a3a3;
+  --brand: #3b82f6;
+}
+
+/* خلفية متدرجة */
+.band-why {
+  background: var(--bg);
+  padding: 64px 0;
+}
+.why-alt {
+  width: min(1100px, 92%);
+  margin: 0 auto;
+  color: var(--text);
+  text-align: center;
+}
+.why-alt h2 {
+  font-size: 32px;
+  margin-bottom: 48px;
+  color: var(--text);
+}
+
+/* شبكة صفّين بعمودين + خط وسط */
+.alt-rows {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px 90px; /* (صفوف , أعمدة) */
+  align-items: start;
+  text-align: left;
+}
+
+/* الخط العمودي بالنص */
+.alt-rows::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--brand),
+    #4ade80,
+    var(--brand),
+    #38bdf8
+  );
+  background-size: 100% 300%;
+  animation: lineScroll 5s linear infinite;
+  border-radius: 8px;
+  opacity: 0.9;
+}
+@keyframes lineScroll {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+/* نخلي عناصر كل صف تسكن العمودين */
+.row {
+  display: contents;
+}
+
+/* الخلايا */
+.cell {
+  z-index: 1;
+}
+
+/* الكارد */
+/* الكارد */
+.cell.card {
+  background: var(--panel);
+  border-bottom: 4px solid var(--brand);
+  border-radius: 24px; /* زودت الحواف لتكون أنعم */
+  padding: 32px 28px; /* زودت البادينغ */
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45); /* ظل أكبر شوي */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.cell.card:hover {
+  transform: translateY(-8px); /* حركة أعلى شوي */
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5); /* ظل Hover أكبر */
+  border-color: #60a5fa;
+}
+
+/* النصوص داخل الكارد */
+/* النصوص داخل الكارد */
+.cell.card h4 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+  font-size: 1.6rem; /* حجم العنوان أكبر شوي */
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+.cell.card p {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 400;
+  font-size: 1rem; /* نص واضح ومريح للقراءة */
+  line-height: 1.9;
+  color: var(--text);
+  opacity: 0.95;
+}
+
+/* النصوص العادية (text cells) */
+.cell.text h3 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+  font-size: 1.5rem; /* حجم العنوان أكبر شوي */
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.cell.text p {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text);
+  opacity: 0.95;
+}
+
+.cell.text ul {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 400;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--muted);
+  padding-left: 20px;
+}
+
+/* استجابة الموبايل */
+@media (max-width: 860px) {
+  .cell.card h4,
+  .cell.text h3 {
+    text-align: center;
+  }
+  .cell.text ul {
+    padding-left: 0;
+    list-style-position: inside;
+    text-align: center;
+  }
+}
+
+
+/* استجابة الموبايل للكارد */
+@media (max-width: 860px) {
+  .cell.card {
+    width: 95%; /* أعرض الكارد شوي على الموبايل */
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+  .cell.text {
+    text-align: center;
+  }
+  .cell.text ul {
+    padding-left: 0;
+    list-style-position: inside;
+  }
+}
+
+/* استجابة للموبايل */
+@media (max-width: 860px) {
+  .alt-rows {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .alt-rows::before {
+    display: none;
+  }
+  /* ترتيب كل صف: نخلي الصندوق فوق والنص تحته */
+  .row .cell.card {
+    order: 1;
+  }
+  .row .cell.text {
+    order: 2;
+  }
+  /* نرجّع أي عكس سابق */
+  .row:nth-child(even) .cell.text,
+  .row:nth-child(even) .cell.card {
+    grid-column: auto;
+  }
+  .why-alt {
+    text-align: center;
+  }
+  .cell.text {
+    text-align: left;
+  }
+}
+@media (max-width: 860px) {
+  .why-alt {
+    text-align: center; /* يخلي العناوين والنصوص بالنص */
+  }
+
+  .alt-rows {
+    grid-template-columns: 1fr; /* عمود واحد بدل عمودين */
+    gap: 30px; /* مسافة بين الصفوف */
+    justify-items: center; /* يوسّط العناصر أفقياً */
+  }
+
+  .row .cell {
+    text-align: center; /* النص بالنص */
+  }
+
+  .cell.card {
+    width: 90%;
+    margin: 0 auto;
+  }
+
+  .cell.text ul {
+    padding-left: 0;
+    list-style-position: inside;
+  }
+
+  /* نخفي الخط العمودي */
+  .alt-rows::before {
+    display: none;
+  }
+}
