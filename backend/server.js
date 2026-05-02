@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
+const path = require("path");
 require("dotenv").config();
 
 const quizRoutes = require("./routes/quizRoutes");
@@ -23,6 +24,11 @@ const {
 } = require("./middleware/validators");
 
 const app = express();
+
+// Render (and most PaaS) terminate TLS at a proxy and forward over HTTP.
+// Without trusting the proxy, express-rate-limit sees every request as
+// coming from the proxy IP and throttles all users together.
+app.set("trust proxy", 1);
 
 // 🛡️ Rate limiters
 // Auth: protects against brute-force on login/signup.
@@ -180,8 +186,9 @@ const authenticateToken = (req, res, next) => {
 
 // Routes
 
-// Health Check
-app.get("/", (req, res) => {
+// Health Check — namespaced under /api so the root path can serve the SPA
+// in monolith deployments. Render's healthCheckPath points here.
+app.get("/api/health", (req, res) => {
   res.json({
     message: "CodeK Backend API is running",
     status: "OK",
@@ -913,7 +920,20 @@ app.post("/api/admin/fix-course-ids", authenticateToken, async (req, res) => {
   }
 });
 
-// 404 Handler
+// 🖥️ Serve the built React app (production only).
+// In production the CRA build output sits at <repo>/build, one level above
+// the backend folder. Any non-/api request gets the SPA shell so client-side
+// routing (React Router) keeps working on hard reloads.
+if (process.env.NODE_ENV === "production") {
+  const buildPath = path.join(__dirname, "..", "build");
+  app.use(express.static(buildPath));
+
+  app.get(/^\/(?!api\/).*/, (req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
+}
+
+// 404 Handler — only reaches API routes (and anything else in dev).
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });

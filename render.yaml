@@ -1,0 +1,46 @@
+# Render Blueprint — CodeK monolith deployment.
+# Express (in backend/) serves both the API and the built React app from
+# the repo root. One service, one URL, no CORS plumbing.
+#
+# After importing this Blueprint:
+#   1. In the Render dashboard, set the secret env vars marked `sync: false`
+#      below (Render will not let the service start until they have values).
+#   2. Update ALLOWED_ORIGINS to the live URL Render assigns
+#      (e.g. https://codek.onrender.com).
+
+services:
+  - type: web
+    name: codek
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: cd .. && npm ci && npm run build && cd backend && npm ci
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: PORT
+        value: "10000"
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_FULLNAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: RATE_LIMIT_AUTH_MAX
+        value: "10"
