@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../config";
+import Notification from "../../components/common/Notification";
 import "./AdminManage.css";
 
 export default function AdminManage() {
@@ -30,6 +31,8 @@ export default function AdminManage() {
 
   // Toast/notification state
   const [notification, setNotification] = useState(null);
+  // Stable callback so <Notification>'s effect doesn't re-trigger on every render.
+  const dismissNotification = useCallback(() => setNotification(null), []);
 
   // Form state for students
   const [formData, setFormData] = useState({
@@ -272,9 +275,6 @@ export default function AdminManage() {
           message: successMessage,
         });
 
-        // Auto-hide notification after 3 seconds
-        setTimeout(() => setNotification(null), 3000);
-
         await fetchData();
         setShowModal(false);
       } else {
@@ -283,7 +283,6 @@ export default function AdminManage() {
           type: "error",
           message: errorData.message || "Error saving course",
         });
-        setTimeout(() => setNotification(null), 3000);
       }
     } catch (error) {
       console.error("Error saving course:", error);
@@ -291,7 +290,6 @@ export default function AdminManage() {
         type: "error",
         message: "Error saving course. Please try again.",
       });
-      setTimeout(() => setNotification(null), 3000);
     }
   };
 
@@ -641,27 +639,11 @@ export default function AdminManage() {
   return (
     <div className="admin-manage-page">
       <div className="manage-container">
-        {/* Notification Toast */}
-        {notification && (
-          <div
-            style={{
-              position: "fixed",
-              top: "20px",
-              right: "20px",
-              padding: "15px 20px",
-              borderRadius: "6px",
-              backgroundColor:
-                notification.type === "success" ? "#4caf50" : "#f44336",
-              color: "white",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              zIndex: 1000,
-              maxWidth: "400px",
-              animation: "slideIn 0.3s ease-out",
-            }}
-          >
-            {notification.message}
-          </div>
-        )}
+        <Notification
+          notification={notification}
+          onDismiss={dismissNotification}
+        />
+
 
         {/* Header */}
         <div className="manage-header">
