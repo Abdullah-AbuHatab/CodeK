@@ -53,33 +53,45 @@ export default function UniversitySubjectDetails() {
             <section>
               <h2>Chapters</h2>
               <ul className="chapters-list">
-                {subject.chapters.map((chapter) => (
-                  <li key={chapter.id} className="chapter-item">
-                    <span>{chapter.title}</span>
+                {subject.chapters.map((chapter, index) => {
+                  // Some seed data stores chapters as plain strings, others
+                  // as { id, title, file } objects. Normalize before render.
+                  const isObject =
+                    chapter && typeof chapter === "object";
+                  const id = isObject ? chapter.id : undefined;
+                  const title = isObject ? chapter.title : chapter;
+                  const file = isObject ? chapter.file : null;
 
-                    <div className="chapter-actions">
-                      <button
-                        type="button"
-                        className="view-btn"
-                        onClick={() => window.open(chapter.file, "_blank")}
-                      >
-                        👁 View
-                      </button>
+                  return (
+                    <li key={id || `chapter-${index}`} className="chapter-item">
+                      <span>{title}</span>
 
-                      <a href={chapter.file} download className="download-btn">
-                        ⬇ Download
-                      </a>
-                    </div>
-                  </li>
-                ))}
+                      {file && (
+                        <div className="chapter-actions">
+                          <button
+                            type="button"
+                            className="view-btn"
+                            onClick={() => window.open(file, "_blank")}
+                          >
+                            👁 View
+                          </button>
+
+                          <a href={file} download className="download-btn">
+                            ⬇ Download
+                          </a>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
 
             <section>
               <h2>What you will learn</h2>
               <ul>
-                {subject.objectives.map((o) => (
-                  <li key={o}>{o}</li>
+                {subject.objectives.map((o, index) => (
+                  <li key={`${o}-${index}`}>{o}</li>
                 ))}
               </ul>
             </section>
