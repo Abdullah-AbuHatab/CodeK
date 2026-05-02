@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { quizService } from "../../services/quizService";
 import { QuizContext } from "../../context/QuizContext";
@@ -48,39 +48,39 @@ export default function Quiz() {
     return selectedQuestions;
   };
 
-  // جلب الأسئلة من Backend
-  useEffect(() => {
-    const fetchQuiz = async () => {
-      const user = JSON.parse(localStorage.getItem("user"));
+  // جلب الأسئلة من Backend (also reused by handleRestart for a fresh round)
+  const loadQuiz = useCallback(async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
 
-      if (!user || user.role !== "student") {
-        navigate("/login", { state: { from: location.pathname } });
-        return;
-      }
+    if (!user || user.role !== "student") {
+      navigate("/login", { state: { from: location.pathname } });
+      return;
+    }
 
-      try {
-        const data = await quizService.getQuiz(courseId);
-        if (data.questions && data.questions.length > 0) {
-          // Select only 10 random questions from the pool
-          const selectedQuestions = selectRandomQuestions(data.questions, 10);
-          const questions = shuffleArray(selectedQuestions).map((q) => ({
-            ...q,
-            options: shuffleArray(q.options),
-          }));
-          setShuffledQuestions(questions);
-          // Quiz is now active - disable chatbot
-          setIsQuizActive(true);
-        } else {
-          setShuffledQuestions([]);
-        }
-      } catch (error) {
-        console.error("Failed to load quiz:", error);
+    try {
+      const data = await quizService.getQuiz(courseId);
+      if (data.questions && data.questions.length > 0) {
+        // Select only 10 random questions from the pool
+        const selectedQuestions = selectRandomQuestions(data.questions, 10);
+        const questions = shuffleArray(selectedQuestions).map((q) => ({
+          ...q,
+          options: shuffleArray(q.options),
+        }));
+        setShuffledQuestions(questions);
+        // Quiz is now active - disable chatbot
+        setIsQuizActive(true);
+      } else {
         setShuffledQuestions([]);
       }
-    };
-
-    fetchQuiz();
+    } catch (error) {
+      console.error("Failed to load quiz:", error);
+      setShuffledQuestions([]);
+    }
   }, [courseId, navigate, location.pathname, setIsQuizActive]);
+
+  useEffect(() => {
+    loadQuiz();
+  }, [loadQuiz]);
 
   // Cleanup - re-enable chatbot when component unmounts or quiz is finished
   useEffect(() => {
@@ -238,8 +238,20 @@ Keep the analysis concise, professional, and actionable.`;
     }
   };
 
-  const handleRestart = () => {
-    window.location.reload();
+  const handleRestart = async () => {
+    setShuffledQuestions([]);
+    setCurrentIndex(0);
+    setSelectedOption(null);
+    setScore(0);
+    setShowResults(false);
+    setAnswersReview([]);
+    setAiHelp("");
+    setShowHelp(false);
+    setAiAnalysis("");
+    setLoadingHelp(false);
+    setLoadingAnalysis(false);
+    setSubmitting(false);
+    await loadQuiz();
   };
 
   if (!shuffledQuestions || shuffledQuestions.length === 0) {
