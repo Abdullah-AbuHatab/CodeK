@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 const quizRoutes = require("./routes/quizRoutes");
@@ -12,8 +13,41 @@ const UniversitySubject = require("./models/UniversitySubject");
 
 const app = express();
 
+// 🛡️ Rate limiters
+// Auth: protects against brute-force on login/signup.
+const authLimiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_AUTH_WINDOW_MS) || 15 * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_AUTH_MAX) || 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message:
+      "Too many login attempts from this IP. Please try again in 15 minutes.",
+  },
+});
+
+// AI: protects the OpenRouter quota from abuse.
+const aiLimiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_AI_WINDOW_MS) || 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_AI_MAX) || 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many AI requests. Please slow down and try again shortly.",
+  },
+});
+
+// General API limiter (sane upper bound for everything else).
+const apiLimiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_API_WINDOW_MS) || 15 * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_API_MAX) || 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use(cors());
 app.use(express.json());
+app.use("/api", apiLimiter);
 app.use("/api/quizzes", quizRoutes);
 
 // 🤖 AI Configuration
@@ -96,7 +130,7 @@ app.get("/", (req, res) => {
 });
 
 // 🤖 Test Chat Endpoint
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", aiLimiter, async (req, res) => {
   try {
     const { prompt } = req.body;
 
@@ -158,7 +192,7 @@ app.post("/api/chat", async (req, res) => {
 });
 
 // 1. Sign Up
-app.post("/api/auth/signup", async (req, res) => {
+app.post("/api/auth/signup", authLimiter, async (req, res) => {
   try {
     const { username, password, fullName, email, phone } = req.body;
 
@@ -231,7 +265,7 @@ app.post("/api/auth/signup", async (req, res) => {
 });
 
 // 2. Login
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", authLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
 
