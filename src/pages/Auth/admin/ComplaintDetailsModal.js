@@ -59,6 +59,7 @@ export default function ComplaintDetailsModal({
             marginTop: "12px",
             padding: "14px",
             backgroundColor: "#f9fafb",
+            color: "#111827",
             borderRadius: "8px",
             borderLeft: "3px solid #4f46e5",
             whiteSpace: "pre-wrap",
@@ -81,13 +82,14 @@ export default function ComplaintDetailsModal({
                 marginBottom: "12px",
                 padding: "12px",
                 backgroundColor: "#eef2ff",
+                color: "#111827",
                 borderRadius: "8px",
               }}
             >
               <div
                 style={{
                   fontSize: "12px",
-                  color: "#6b7280",
+                  color: "#4b5563",
                   marginBottom: "6px",
                   display: "flex",
                   justifyContent: "space-between",
@@ -101,7 +103,13 @@ export default function ComplaintDetailsModal({
                   {r.error ? " — delivery failed" : ""}
                 </span>
               </div>
-              <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+              <div
+                style={{
+                  whiteSpace: "pre-wrap",
+                  lineHeight: 1.5,
+                  color: "#111827",
+                }}
+              >
                 {r.message}
               </div>
               {r.error && (
@@ -135,6 +143,8 @@ export default function ComplaintDetailsModal({
           style={{
             width: "100%",
             padding: "12px",
+            backgroundColor: "#ffffff",
+            color: "#111827",
             border: "1px solid #d1d5db",
             borderRadius: "8px",
             fontFamily: "inherit",
