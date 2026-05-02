@@ -1,8 +1,7 @@
 // src/components/common/PrivateRoute.js
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "../../config";
 const VERIFY_CACHE_KEY = "auth:lastVerified";
 const VERIFY_TTL_MS = 60 * 1000; // 1 min — keeps navigation snappy
 

@@ -1,5 +1,5 @@
 // src/services/authService.js
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "../config";
 
 // Helper function للحصول على الـ token
 const getAuthToken = () => {

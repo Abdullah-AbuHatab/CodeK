@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { COURSES } from "../../data/coursesData";
 import { UNIVERSITY_SUBJECTS } from "../../data/universitySubjectsData";
+import { API_URL } from "../../config";
 import "./CourseDetails.css";
 
 export default function CourseDetails() {
@@ -18,9 +19,7 @@ export default function CourseDetails() {
     const fetchCourse = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          "http://localhost:5000/api/courses/public/all",
-        );
+        const response = await fetch(`${API_URL}/courses/public/all`);
         if (!response.ok) {
           throw new Error("Failed to fetch courses");
         }

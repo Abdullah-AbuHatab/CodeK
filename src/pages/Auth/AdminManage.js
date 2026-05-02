@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../config";
 import "./AdminManage.css";
-
-const API_URL = "http://localhost:5000/api";
 
 export default function AdminManage() {
   const [activeTab, setActiveTab] = useState("students");

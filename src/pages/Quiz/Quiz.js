@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { quizService } from "../../services/quizService";
 import { QuizContext } from "../../context/QuizContext";
+import { API_URL } from "../../config";
 import "./Quiz.css";
 
 export default function Quiz() {
@@ -108,7 +109,7 @@ Options: ${question.options.join(", ")}
 
 Provide a SHORT, one-sentence hint in English to help the student find the correct answer WITHOUT directly naming it or giving the answer away. Be encouraging and guide them to think critically.`;
 
-      const response = await fetch("http://localhost:5000/api/chat", {
+      const response = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
@@ -170,7 +171,7 @@ Please provide a detailed analysis in this format:
 
 Keep the analysis concise, professional, and actionable.`;
 
-      const response = await fetch("http://localhost:5000/api/chat", {
+      const response = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),

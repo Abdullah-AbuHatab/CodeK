@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { QuizContext } from "../context/QuizContext";
+import { API_URL } from "../config";
 import "./FloatingChatBot.css";
 
 export default function FloatingChatBot() {
@@ -59,7 +60,7 @@ Instructions:
 4. Use code snippets or bullet points for technical explanations.
 `;
 
-      const response = await fetch("http://localhost:5000/api/chat", {
+      const response = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),

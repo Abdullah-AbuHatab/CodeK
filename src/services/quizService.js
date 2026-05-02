@@ -1,7 +1,6 @@
 // src/services/quizService.js
 import { authService } from "./authService";
-
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "../config";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");

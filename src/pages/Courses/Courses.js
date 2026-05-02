@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Courses.css";
 import { COURSES } from "../../data/coursesData";
+import { API_URL } from "../../config";
 
 export default function Courses() {
   const [levelFilter, setLevelFilter] = useState("All");
@@ -21,9 +22,7 @@ export default function Courses() {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        "http://localhost:5000/api/courses/public/all",
-      );
+      const response = await fetch(`${API_URL}/courses/public/all`);
       if (!response.ok) {
         throw new Error("Failed to fetch courses");
       }

@@ -5,9 +5,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminService, authService } from "../../services/authService";
 import { COURSES } from "../../data/coursesData";
+import { API_URL } from "../../config";
 import "./Admin.css";
-
-const API_URL = "http://localhost:5000/api";
 
 export default function Admin() {
   const [user, setUser] = useState(null);
