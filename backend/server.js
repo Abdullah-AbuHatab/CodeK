@@ -240,25 +240,7 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check admin credentials
-    if (username === "admin" && password === "123") {
-      const token = jwt.sign({ username: "admin", role: "admin" }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-
-      return res.json({
-        token,
-        user: {
-          username: "admin",
-          fullName: "Admin User",
-          email: "admin@codek.com",
-          role: "admin",
-          quizResults: [],
-        },
-      });
-    }
-
-    // Find user
+    // Find user (admin and students share the same flow)
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({ message: "Invalid username or password" });
@@ -299,15 +281,6 @@ app.post("/api/auth/login", async (req, res) => {
 // 3. Get Current User
 app.get("/api/auth/me", authenticateToken, async (req, res) => {
   try {
-    if (req.user.username === "admin") {
-      return res.json({
-        username: "admin",
-        name: "Admin User",
-        role: "admin",
-        quizResults: [],
-      });
-    }
-
     const user = await User.findById(req.user.id).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
