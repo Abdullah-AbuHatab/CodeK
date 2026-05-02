@@ -141,7 +141,7 @@ Instructions:
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your question..."
               rows={1}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   sendMessage();
