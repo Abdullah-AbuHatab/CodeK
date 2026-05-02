@@ -92,8 +92,8 @@ admin console, and a built-in tutor chatbot.
 ### 1. Clone
 
 ```bash
-git clone <repo-url>
-cd "zero AI finall project"
+git clone https://github.com/Abdullah-AbuHatab/CodeK.git
+cd CodeK
 ```
 
 ### 2. Backend
