@@ -27,7 +27,7 @@ export const adminCourseService = {
   getAllUniversitySubjects: async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/university`, {
+      const response = await fetch(`${API_URL}/university-subjects`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -121,7 +121,7 @@ export const adminCourseService = {
   createUniversitySubject: async (subjectData) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/university`, {
+      const response = await fetch(`${API_URL}/university-subjects`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +146,7 @@ export const adminCourseService = {
   updateUniversitySubject: async (subjectId, subjectData) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/university/${subjectId}`, {
+      const response = await fetch(`${API_URL}/university-subjects/${subjectId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -171,7 +171,7 @@ export const adminCourseService = {
   deleteUniversitySubject: async (subjectId) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/university/${subjectId}`, {
+      const response = await fetch(`${API_URL}/university-subjects/${subjectId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
