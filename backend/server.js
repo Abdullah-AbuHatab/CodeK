@@ -26,14 +26,17 @@ const app = express();
 
 // 🛡️ Rate limiters
 // Auth: protects against brute-force on login/signup.
+// Only failed attempts count toward the limit, so a legitimate user who
+// logs in correctly never gets locked out by their own activity.
 const authLimiter = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_AUTH_WINDOW_MS) || 15 * 60 * 1000,
-  max: Number(process.env.RATE_LIMIT_AUTH_MAX) || 5,
+  max: Number(process.env.RATE_LIMIT_AUTH_MAX) || 10,
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: true,
   message: {
     message:
-      "Too many login attempts from this IP. Please try again in 15 minutes.",
+      "Too many failed login attempts from this IP. Please try again in 15 minutes.",
   },
 });
 
