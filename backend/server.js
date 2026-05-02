@@ -146,6 +146,17 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
+// Build a Mongo lookup that matches either the custom `id` field or a real
+// MongoDB `_id`. Frontend sometimes sends one and sometimes the other —
+// accepting both keeps existing call sites working while we migrate.
+const byIdOrSlug = (raw) => {
+  const filters = [{ id: raw }];
+  if (mongoose.Types.ObjectId.isValid(raw)) {
+    filters.push({ _id: raw });
+  }
+  return { $or: filters };
+};
+
 // Middleware للتحقق من الـ Token
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -619,9 +630,11 @@ app.put("/api/courses/:id", authenticateToken, courseValidator, async (req, res)
       return res.status(403).json({ message: "Access denied: Admin only" });
     }
 
-    const course = await Course.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const course = await Course.findOneAndUpdate(
+      byIdOrSlug(req.params.id),
+      req.body,
+      { new: true },
+    );
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
@@ -641,7 +654,7 @@ app.delete("/api/courses/:id", authenticateToken, async (req, res) => {
       return res.status(403).json({ message: "Access denied: Admin only" });
     }
 
-    const course = await Course.findByIdAndDelete(req.params.id);
+    const course = await Course.findOneAndDelete(byIdOrSlug(req.params.id));
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
@@ -696,12 +709,10 @@ app.put("/api/university-subjects/:id", authenticateToken, universitySubjectVali
       return res.status(403).json({ message: "Access denied: Admin only" });
     }
 
-    const subject = await UniversitySubject.findByIdAndUpdate(
-      req.params.id,
+    const subject = await UniversitySubject.findOneAndUpdate(
+      byIdOrSlug(req.params.id),
       req.body,
-      {
-        new: true,
-      },
+      { new: true },
     );
 
     if (!subject) {
@@ -725,7 +736,9 @@ app.delete(
         return res.status(403).json({ message: "Access denied: Admin only" });
       }
 
-      const subject = await UniversitySubject.findByIdAndDelete(req.params.id);
+      const subject = await UniversitySubject.findOneAndDelete(
+        byIdOrSlug(req.params.id),
+      );
       if (!subject) {
         return res
           .status(404)
