@@ -270,7 +270,7 @@ Generic `/api` traffic is capped at 300 req / 15 min per IP.
 | Mohammed Ibdah | Team Leader & Frontend Architect |
 | Mahmoud Al-Mahasneh | UI/UX Designer & Creative Dev |
 | Mark Haddad | System Logic & Backend Dev |
-| Abdullah Abu-hatab | Data Structure & Content Lead |
+| Abdullah Abu-hatab | AI Tutor Assistant & AI Integration |
 | Omar Ashraf | React State & Hooks Specialist |
 | Khaled Dhdoli | Input Security & Validation |
 
