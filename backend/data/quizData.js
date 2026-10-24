@@ -1977,7 +1977,7 @@ const QUIZZES = {
       question:
         'String txt1 = "Al-Huson University College";\nString txt2 = "Huson";\nvoid setup() { Serial.begin(9600); Serial.println(txt1.indexOf(txt2)); }',
       options: ["a. Huson University College", "b. 4", "c. 3", "d. Huson"],
-      answer: "c",
+      answer: "c. 3",
     },
     {
       id: 2,
@@ -1988,35 +1988,35 @@ const QUIZZES = {
         "c. value: 0 to 255",
         "d. value: 0 or 5 volt",
       ],
-      answer: "a",
+      answer: "a. value: HIGH or LOW",
     },
     {
       id: 3,
       question:
         "const int LED_BUILTIN = 8;\nvoid setup() { pinMode(ledPin, OUTPUT); Serial.begin(9600); pinMode(LED_BUILTIN, OUTPUT); Serial.println(LED_BUILTIN); }\nvoid loop() { digitalWrite(LED_BUILTIN, HIGH); delay(1000); digitalWrite(LED_BUILTIN, LOW); delay(1000); }",
       options: ["a. 8", "b. 20", "c. 13", "d. error"],
-      answer: "d",
+      answer: "d. error",
     },
     {
       id: 4,
       question:
         "void setup() { Serial.begin(9600); Serial.println(ceil(5.2)); }",
       options: ["a. 5", "b. 5.5", "c. 6", "d. 5.2"],
-      answer: "c",
+      answer: "c. 6",
     },
     {
       id: 5,
       question:
         "int myValue = 0;\nvoid setup() { myValue = myValue - 1; myValue = 1; Serial.begin(9600); Serial.println(myValue); }",
       options: ["a. 1", "b. -2", "c. 2", "d. -1"],
-      answer: "b",
+      answer: "b. -2",
     },
     {
       id: 6,
       question:
         "void setup() { Serial.begin(9600); Serial.println(floor(-1.1)); }",
       options: ["a. -1.00", "b. 1.00", "c. 2.00", "d. -2.00"],
-      answer: "d",
+      answer: "d. -2.00",
     },
     {
       id: 7,
@@ -2027,7 +2027,7 @@ const QUIZZES = {
         "c. myMaxValue will be the larger than 100",
         "d. myMinValue will be the smaller of myVal or 200",
       ],
-      answer: "d",
+      answer: "d. myMinValue will be the smaller of myVal or 200",
     },
     {
       id: 8,
@@ -2038,7 +2038,7 @@ const QUIZZES = {
         "c. Temperature and humidity sensor",
         "d. color sensor",
       ],
-      answer: "c",
+      answer: "c. Temperature and humidity sensor",
     },
     {
       id: 9,
@@ -2049,14 +2049,14 @@ const QUIZZES = {
         "c. returns a random number between 0 and max 11",
         "d. returns a random number between 1 and max 11",
       ],
-      answer: "c",
+      answer: "c. returns a random number between 0 and max 11",
     },
     {
       id: 10,
       question:
         "void setup() { Serial.begin(9600); Serial.println( floor(-1.1) ); }",
       options: ["a. -1.00", "b. -2.00", "c. 2.00", "d. 1.00"],
-      answer: "b",
+      answer: "b. -2.00",
     },
     {
       id: 11,
@@ -2067,7 +2067,7 @@ const QUIZZES = {
         "c. the frequency and wavelength",
         "d. the current and voltage",
       ],
-      answer: "c",
+      answer: "c. the frequency and wavelength",
     },
     {
       id: 12,
@@ -2078,7 +2078,7 @@ const QUIZZES = {
         "c. electrical pulse of variable width (PWM)",
         "d. one HIGH digital signal",
       ],
-      answer: "c",
+      answer: "c. electrical pulse of variable width (PWM)",
     },
     {
       id: 13,
@@ -2090,14 +2090,14 @@ const QUIZZES = {
         "c. Huson= 5",
         "d. College=7 0",
       ],
-      answer: "d",
+      answer: "d. College=7 0",
     },
     {
       id: 14,
       question:
         'String a="bird ";\nvoid setup() { Serial.begin(9600); a.substring(3); Serial.println( a.substring(3)); }',
       options: ["a. bird", "b. d", "c. bid", "d. id"],
-      answer: "d",
+      answer: "d. id",
     },
     {
       id: 15,
@@ -2109,7 +2109,7 @@ const QUIZZES = {
         "c. pinmode(pin mode)",
         "d. PINMode(pin mode)",
       ],
-      answer: "b",
+      answer: "b. pinMode(pin mode)",
     },
     {
       id: 16,
@@ -2126,21 +2126,21 @@ const QUIZZES = {
         "c. Takes input voltage up to 3.3 v pins A0 to A5 on the board",
         "d. Takes input voltage up to 5 v pins 1 to 13 on the board",
       ],
-      answer: "b",
+      answer: "b. Takes input voltage up to 5 v pins A0 to A5 on the board",
     },
     {
       id: 18,
       question:
         "int myValue=5;\nvoid setup() { Serial.begin(9600); myValue = pow(2,3); Serial.println( myValue-=1 %2); }",
       options: ["a. 8", "b. 2", "c. 5", "d. 1"],
-      answer: "d",
+      answer: "d. 1",
     },
     {
       id: 19,
       question:
         'String a="University ";\nvoid setup() { Serial.begin(9600); a.substring(3); Serial.println( a.substring(2,4)); }',
       options: ["a. iver", "b. niv", "c. N iv", "d. ive"],
-      answer: "c",
+      answer: "c. N iv",
     },
     {
       id: 20,
@@ -2151,7 +2151,7 @@ const QUIZZES = {
         "c. value: the duty cycle between 0 (always off) and 255 (always on)",
         "d. value: the duty cycle between 0 (always off) and 512 (always on)",
       ],
-      answer: "c",
+      answer: "c. value: the duty cycle between 0 (always off) and 255 (always on)",
     },
   ],
   "Numerical-Analysis": [
@@ -2165,14 +2165,14 @@ const QUIZZES = {
         "c. Used in identifying the structure of chemical compounds",
         "d. Used for geological data analysis for minerals",
       ],
-      answer: "a",
+      answer: "a. Used for blood disease diagnosis",
     },
     {
       id: 2,
       question:
         "Assume f(x) is a continuous function on the closed interval [5.1, 9.4] and you applied the bisection method to solve f(x)=0. If the minimum number of iterations you did is 23. Compute the tolerance error.",
       options: ["a. 10⁸", "b. 10⁻⁹", "c. 10⁻⁸", "d. 10⁻⁶", "e. 10⁶"],
-      answer: "c",
+      answer: "c. 10⁻⁸",
     },
     {
       id: 3,
@@ -2184,7 +2184,7 @@ const QUIZZES = {
         "d. 12.0337 × 10⁻⁴",
         "e. -0.1286 × 10⁴",
       ],
-      answer: "c",
+      answer: "c. -12.0337 × 10⁻⁴",
     },
     {
       id: 4,
@@ -2197,7 +2197,7 @@ const QUIZZES = {
         "d. -4.6166",
         "e. -195.7144",
       ],
-      answer: "b",
+      answer: "b. -1.0171",
     },
     {
       id: 5,
@@ -2210,13 +2210,13 @@ const QUIZZES = {
         "d. 0.0306%",
         "e. 0.4814%",
       ],
-      answer: "c",
+      answer: "c. 3.06%",
     },
     {
       id: 6,
       question: "Use 3-digit arithmetic chopping to compute: 2/8 + log(52)",
       options: ["a. -1.96", "b. 1.97", "c. 2.01", "d. 1.96", "e. -1.97"],
-      answer: "b",
+      answer: "b. 1.97",
     },
     {
       id: 7,
@@ -2229,7 +2229,7 @@ const QUIZZES = {
         "d. There is at least one root in this range",
         "e. There are an even number of roots or there is no root in this range",
       ],
-      answer: "d",
+      answer: "d. There is at least one root in this range",
     },
     {
       id: 8,
@@ -2241,7 +2241,7 @@ const QUIZZES = {
         "c. standard form",
         "d. reduced row echelon form",
       ],
-      answer: "a",
+      answer: "a. row echelon form",
     },
     {
       id: 9,
@@ -2253,7 +2253,7 @@ const QUIZZES = {
         "c. If x is evenly divisible by 2, then x is evenly divisible by 4",
         "d. If x is not evenly divisible by 4, then x is not evenly divisible by 2",
       ],
-      answer: "b",
+      answer: "b. If x is not evenly divisible by 2, then x is not evenly divisible by 4",
     },
     {
       id: 10,
@@ -2266,20 +2266,20 @@ const QUIZZES = {
         "d. Richardson",
         "e. Gauss-Seidel",
       ],
-      answer: "c",
+      answer: "c. Cramer",
     },
     {
       id: 11,
       question:
         "If A = 60.442, find the relative error when approximating A by B = 61 (rounded to 3 decimal places)",
       options: ["a. -0.558", "b. -0.009", "c. 0.009", "d. 0.923", "e. 0.558"],
-      answer: "c",
+      answer: "c. 0.009",
     },
     {
       id: 12,
       question: "Use 3-digit arithmetic chopping to compute: 3/9 + log(18)",
       options: ["a. 1.63", "b. 1.59", "c. 1.58", "d. -1.59", "e. -1.58"],
-      answer: "c",
+      answer: "c. 1.58",
     },
     {
       id: 13,
@@ -2292,14 +2292,14 @@ const QUIZZES = {
         "d. There is exactly one root in this range",
         "e. There are an even number of roots or there is no root in this range",
       ],
-      answer: "b",
+      answer: "b. There is at least one root in this range",
     },
     {
       id: 14,
       question:
         "Find the minimum number of iterations required by the bisection method to solve f(x)=0 with the tolerance 10⁻³. Assume f(x) is a continuous function on the closed interval [4,11].",
       options: ["a. 12", "b. 13", "c. 15", "d. 11", "e. 14"],
-      answer: "e",
+      answer: "e. 14",
     },
     {
       id: 15,
@@ -2312,7 +2312,7 @@ const QUIZZES = {
         "d. random",
         "e. open",
       ],
-      answer: "e",
+      answer: "e. open",
     },
     {
       id: 16,
@@ -2324,14 +2324,14 @@ const QUIZZES = {
         "C. Length at least is odd",
         "D. Start with letter a and end with letter a",
       ],
-      answer: "C",
+      answer: "C. Length at least is odd",
     },
     {
       id: 17,
       question:
         "If A = 60.31, find the relative error when approximating A by B = 61 (rounded to 3 decimal places)",
       options: ["a. -0.011", "b. 0.011", "c. -0.69", "d. 0.114", "e. 0.69"],
-      answer: "b",
+      answer: "b. 0.011",
     },
     {
       id: 18,
@@ -2344,7 +2344,7 @@ const QUIZZES = {
         "d. There is exactly one root in this range",
         "e. There are exactly two roots in this range",
       ],
-      answer: "a",
+      answer: "a. There are an even number of roots or there is no root in this range",
     },
   ],
   db2: [

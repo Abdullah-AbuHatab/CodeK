@@ -1,8 +1,11 @@
-// fixCourseIds.js
+// scripts/fixCourseIds.js
+// One-off maintenance: give courses whose quiz references them by MongoDB
+// _id a matching custom `id`. Run from backend/: node scripts/fixCourseIds.js
+const path = require("path");
 const mongoose = require("mongoose");
-const Course = require("./models/Course");
-const Quiz = require("./models/Quiz");
-require("dotenv").config();
+const Course = require("../models/Course");
+const Quiz = require("../models/Quiz");
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 
 async function fixCourseIds() {
   await mongoose.connect(process.env.MONGODB_URI);
@@ -27,4 +30,8 @@ async function fixCourseIds() {
   mongoose.disconnect();
 }
 
-fixCourseIds();
+fixCourseIds().catch((err) => {
+  console.error("fixCourseIds failed:", err.message);
+  mongoose.disconnect();
+  process.exitCode = 1;
+});

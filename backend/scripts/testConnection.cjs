@@ -1,5 +1,9 @@
+// scripts/testConnection.cjs
+// Quick connectivity check for MONGODB_URI. Run from backend/:
+//   node scripts/testConnection.cjs
+const path = require("path");
 const mongoose = require("mongoose");
-require("dotenv").config();
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 
 (async () => {
   try {
