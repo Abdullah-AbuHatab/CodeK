@@ -12,12 +12,12 @@
 // instructions with their own.
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = "google/gemma-4-31b-it:free";
+const DEFAULT_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
 // Tried in order by OpenRouter when the primary model errors, is rate-limited
 // or has been retired, so one disappearing model id cannot break the tutor.
 const DEFAULT_FALLBACK_MODELS = Object.freeze([
-  "google/gemma-4-26b-a4b-it:free",
-  "nvidia/nemotron-3-super-120b-a12b:free",
+  "cohere/north-mini-code:free",
+  "google/gemma-4-31b-it:free",
 ]);
 const DEFAULT_TIMEOUT_MS = 20000;
 

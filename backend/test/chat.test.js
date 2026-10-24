@@ -118,10 +118,10 @@ test("uses the default primary + fallback models when the env is unset", async (
   const calls = stubFetch(() => okResponse());
   const res = await chat({ message: "hello" });
   assert.equal(res.status, 200);
-  assert.equal(DEFAULT_MODEL, "google/gemma-4-31b-it:free");
+  assert.equal(DEFAULT_MODEL, "nvidia/nemotron-3-ultra-550b-a55b:free");
   assert.deepEqual(DEFAULT_FALLBACK_MODELS, [
-    "google/gemma-4-26b-a4b-it:free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
+    "cohere/north-mini-code:free",
+    "google/gemma-4-31b-it:free",
   ]);
   assert.equal(calls[0].body.model, DEFAULT_MODEL);
   assert.deepEqual(calls[0].body.models, [DEFAULT_MODEL, ...DEFAULT_FALLBACK_MODELS]);
