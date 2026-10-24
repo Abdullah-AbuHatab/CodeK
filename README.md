@@ -8,6 +8,8 @@ The project received a **Grade A** and was demonstrated live during the graduati
 
 ## Project Overview
 
+**Project period:** Oct 2025 – Jan 2026 (graduation project, first semester 2025/2026).
+
 CodeK helps students learn programming through:
 
 - Web Development, AI, and Cyber Security learning tracks
@@ -73,6 +75,16 @@ AI requests use their own limiter, separate from the platform's general API and 
 ### Conversation context
 
 The assistant sends recent messages as context so replies remain relevant to the ongoing conversation instead of treating every message as isolated.
+
+### Server-owned prompt and hardened endpoint
+
+The client sends only `{ message, history }`. The server owns the system prompt and builds the role-separated `messages[]` for the model, so a client cannot replace the tutor's instructions.
+
+- History is capped (at most 20 entries accepted, the 10 most recent forwarded, 12,000 characters in total) and a message is limited to 6,000 characters
+- The upstream call has a 20-second timeout (`AbortController`, `CHAT_TIMEOUT_MS`)
+- The model comes from `OPENROUTER_MODEL` (default `google/gemma-4-31b-it:free`), with fallbacks from `OPENROUTER_FALLBACK_MODELS` sent through OpenRouter's `models` routing, so one retired model cannot break the tutor
+- Upstream failures map to stable codes (`AI_TIMEOUT`, `AI_RATE_LIMITED`, `AI_UPSTREAM_ERROR`, `AI_EMPTY_RESPONSE`, `AI_NOT_CONFIGURED`); provider error text and status codes are logged on the server and never sent to the browser
+- Sign-in can be required with `CHAT_REQUIRE_AUTH=true` (default `false`)
 
 ---
 
@@ -147,13 +159,17 @@ The application includes several defensive measures:
 
 ```text
 CodeK/
+├── .github/workflows/
+│   └── keepalive.yml      # pings /api/health/db every ~5 days
 ├── backend/
 │   ├── data/
 │   ├── middleware/
 │   ├── models/
 │   ├── routes/
-│   ├── seedAdmin.js
-│   ├── seedData.js
+│   ├── scripts/           # seed.js, fixCourseIds.js, testConnection.cjs
+│   ├── services/          # aiTutor.js (OpenRouter), brevo.js (e-mail)
+│   ├── test/              # node:test + supertest + mongodb-memory-server
+│   ├── db.js              # background connect/retry, health, 503 guard
 │   └── server.js
 ├── public/
 ├── src/
@@ -164,6 +180,7 @@ CodeK/
 │   └── App.js
 ├── .env.example
 ├── package.json
+├── render.yaml            # Render Blueprint
 └── README.md
 ```
 
@@ -200,13 +217,17 @@ JWT_SECRET
 OPENROUTER_API_KEY
 ADMIN_USERNAME
 ADMIN_PASSWORD
+ADMIN_EMAIL
 ```
 
-Seed the project data if needed:
+Seed the database (courses, university subjects, quizzes and the admin user from `ADMIN_*`). The command is idempotent: it inserts what is missing and never deletes anything, so it is safe to run again:
 
 ```bash
-node seedAdmin.js
-node seedData.js
+npm run seed
+# reset seeded documents to the repository's values:
+npm run seed -- --overwrite
+# only some steps (courses, subjects, quizzes, admin):
+npm run seed -- --only=quizzes
 ```
 
 Start the backend:
@@ -243,6 +264,18 @@ The frontend runs on:
 http://localhost:3000
 ```
 
+### 4. Tests
+
+```bash
+# backend (Node 22+; starts a throwaway in-memory MongoDB, makes no network calls)
+cd backend
+npm test
+
+# frontend
+cd ..
+npx react-scripts test --watchAll=false
+```
+
 ---
 
 ## Selected API Endpoints
@@ -255,10 +288,17 @@ POST /api/auth/login
 GET  /api/auth/me
 ```
 
+### Health
+
+```text
+GET /api/health      # liveness: 200 while the process is up, includes the DB state
+GET /api/health/db   # deep check: real MongoDB ping, 503 when the database is unreachable
+```
+
 ### AI Tutor
 
 ```text
-POST /api/chat
+POST /api/chat       # body: { message, history?: [{ role: "user" | "assistant", content }] }
 ```
 
 ### Courses & Content
@@ -301,7 +341,85 @@ CodeK was developed by a team of six students.
 - Project type: **Web application**
 - Languages: **Arabic / English**
 - Grade: **A**
-- Live demo: **Completed successfully**
+- Demonstrated live at the graduation defence
+- Live demo: _link to be added after deployment_ (`https://<service-name>.onrender.com`)
+
+---
+
+## Repository history
+
+Commit `ac1bb86` imports the team's final code as the baseline. Every later commit is Abdullah's own follow-up work (security fixes, refactoring, deployment and AI-tutor hardening).
+
+The university lecture files (`public/university/`) were removed in a later commit for copyright reasons; they are still present in the history up to and including commit `2ff87ce`.
+
+---
+
+## Deployment
+
+The app is a monolith: Express in `backend/` serves the API and the built React app from one URL. It runs on free tiers only.
+
+### 1. MongoDB Atlas (Free cluster)
+
+1. Create a project and a **Free** cluster.
+2. **Database Access** → add a database user with an auto-generated password and the *Read and write to any database* role.
+3. **Network Access** → add `0.0.0.0/0`. Render's outbound IP addresses are not fixed, so they cannot be allow-listed one by one; access is still protected by the database user's credentials.
+4. **Connect → Drivers** → copy the `mongodb+srv://` connection string, insert the user's password and add a database name, e.g. `.../codek-platform?retryWrites=true&w=majority`.
+
+### 2. Render (free web service)
+
+1. **New → Blueprint** → select this repository; Render reads `render.yaml`.
+2. Fill in the secret values when prompted:
+
+| Variable | Required | Notes |
+|---|---|---|
+| `MONGODB_URI` | yes | Atlas connection string from step 1 |
+| `JWT_SECRET` | yes | generated by Render (`generateValue`); the server refuses to start without it |
+| `OPENROUTER_API_KEY` | for the AI tutor | without it `/api/chat` answers `503 AI_NOT_CONFIGURED` |
+| `OPENROUTER_MODEL` | no | default `google/gemma-4-31b-it:free` |
+| `OPENROUTER_FALLBACK_MODELS` | no | comma-separated, tried in order after the primary; default `google/gemma-4-26b-a4b-it:free,nvidia/nemotron-3-super-120b-a12b:free`; empty = primary only |
+| `CHAT_REQUIRE_AUTH` | no | `true` = only logged-in users can use the tutor; default `false` |
+| `ALLOWED_ORIGINS` | no | the service URL, e.g. `https://codek.onrender.com` (only matters for cross-origin clients) |
+| `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `CONTACT_RECIPIENT_EMAIL` | no | contact-form e-mail; messages are saved even without them |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_EMAIL`, `ADMIN_FULLNAME` | no | read only by the seed script, not by the server |
+
+`NODE_ENV`, `NODE_VERSION`, `PORT`, `GENERATE_SOURCEMAP` and the rate-limit values are already set in the Blueprint.
+
+### 3. Seed the database
+
+Render's free plan has no shell, so seed from your machine once the cluster exists. Put `MONGODB_URI` and the `ADMIN_*` values (password of 12+ characters) in `backend/.env`, then:
+
+```bash
+cd backend
+npm ci
+npm run seed
+```
+
+### 4. Keep-alive
+
+Atlas pauses a Free cluster after 30 days without connections, and the Render free service sleeps after 15 minutes idle, so a quiet site would eventually lose its database. `.github/workflows/keepalive.yml` calls `/api/health/db` every ~5 days, which wakes the service and makes it run a real ping against Atlas.
+
+1. **Settings → Secrets and variables → Actions → Variables** → add the repository variable `APP_URL` = `https://<service-name>.onrender.com`.
+2. **Actions → Keep-alive → Run workflow** once to check it.
+
+GitHub disables scheduled workflows in public repositories after 60 days without repository activity. If that happens, re-enable it from **Actions → Keep-alive → Enable workflow** or with `gh workflow enable keepalive.yml`. Atlas also e-mails a warning seven days before it pauses a cluster.
+
+### Cold starts
+
+After 15 idle minutes Render stops the free service; the next visitor waits about a minute while it starts. The server answers `/api/health` as soon as it is listening and connects to MongoDB in the background (retrying with backoff), so the React app loads even while the database is unreachable; API routes that need the database answer `503 DB_UNAVAILABLE` until the connection is up.
+
+---
+
+## Known limitations
+
+- Free-tier cold start: the first request after 15 idle minutes takes about a minute.
+- The public university-subject pages read `src/data/universitySubjectsData.js` in the browser, not the database, so admin edits to subjects do not change them.
+- The university lecture files (slides and PDFs, about 130 MB in `public/university/`) were removed for copyright reasons: they are the course instructors' material. They remain in the older git history. Subject pages list the chapters and show "Course materials are available to enrolled students" instead of View/Download buttons.
+- Two quiz questions need a content fix and were left unchanged:
+  - `Wireless-Networks` #14 is an ordering question whose options are single items, so none of them matches the stored answer and it can never be graded correct.
+  - `Numerical-Analysis` #14 (bisection on [4, 11], tolerance 10⁻³) expects "e. 14", while the usual bound n ≥ log2(7 / 10⁻³) ≈ 12.8 gives 13.
+- The default AI models are OpenRouter `:free` models, which have per-minute and daily request limits; when they are exhausted the tutor answers `AI_RATE_LIMITED` until the limit resets.
+- There is no CI workflow for the tests yet; run them locally before pushing.
+- JWTs are valid for 7 days and cannot be revoked before they expire.
 
 ---
 

@@ -4,9 +4,16 @@
 #
 # After importing this Blueprint:
 #   1. In the Render dashboard, set the secret env vars marked `sync: false`
-#      below (Render will not let the service start until they have values).
+#      below (Render asks for them when the Blueprint is created).
 #   2. Update ALLOWED_ORIGINS to the live URL Render assigns
 #      (e.g. https://codek.onrender.com).
+#   3. Seed the database once from your machine: `cd backend && npm run seed`
+#      (Render's free plan has no shell). See README → Deployment.
+#
+# Free-plan behaviour: the service sleeps after 15 minutes without traffic and
+# the first request afterwards takes about a minute. The server starts even if
+# MongoDB is unreachable (it keeps retrying), so /api/health stays green; the
+# deep check is /api/health/db.
 
 services:
   - type: web
@@ -15,23 +22,41 @@ services:
     plan: free
     region: frankfurt
     rootDir: backend
-    buildCommand: cd .. && npm ci && npm run build && cd backend && npm ci
+    # --omit=dev keeps test-only packages (mongodb-memory-server) off the server.
+    buildCommand: cd .. && npm ci && npm run build && cd backend && npm ci --omit=dev
     startCommand: node server.js
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
+      # Node 20 reached end-of-life on 2026-04-30; 22 is the maintained LTS.
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
       - key: PORT
         value: "10000"
       - key: MONGODB_URI
         sync: false
+      # Render generates a strong random value on first creation.
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
       - key: OPENROUTER_API_KEY
         sync: false
+      # Vendor-prefixed OpenRouter model id (see https://openrouter.ai/models).
+      - key: OPENROUTER_MODEL
+        value: google/gemma-4-31b-it:free
+      # Comma-separated ids OpenRouter tries in order if the primary fails or
+      # is retired. Set it to an empty value to use the primary model only.
+      - key: OPENROUTER_FALLBACK_MODELS
+        value: google/gemma-4-26b-a4b-it:free,nvidia/nemotron-3-super-120b-a12b:free
+      # "true" makes /api/chat require a logged-in user (JWT). Default off.
+      - key: CHAT_REQUIRE_AUTH
+        value: "false"
+      # Skip source maps: smaller build, less build memory, source not published.
+      - key: GENERATE_SOURCEMAP
+        value: "false"
+      # ADMIN_* are used by the seed script (npm run seed) to create the admin
+      # user; the running server does not read them.
       - key: ADMIN_USERNAME
         sync: false
       - key: ADMIN_PASSWORD
