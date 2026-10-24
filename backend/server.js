@@ -6,13 +6,26 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const path = require("path");
-require("dotenv").config();
+// Tests configure the environment themselves; a developer's backend/.env must
+// not leak into them.
+if (process.env.NODE_ENV !== "test") {
+  require("dotenv").config({ path: path.join(__dirname, ".env") });
+}
 
 const quizRoutes = require("./routes/quizRoutes");
 const Quiz = require("./models/Quiz");
 const Course = require("./models/Course");
 const UniversitySubject = require("./models/UniversitySubject");
 const Complaint = require("./models/Complaint");
+const User = require("./models/User");
+const {
+  connectWithRetry,
+  disconnectDb,
+  getDbStatus,
+  pingDb,
+  requireDb,
+} = require("./db");
+const { askTutor, AiTutorError } = require("./services/aiTutor");
 const {
   sendEmail,
   buildComplaintNotificationHtml,
@@ -61,6 +74,7 @@ const aiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: {
+    code: "RATE_LIMITED",
     message: "Too many AI requests. Please slow down and try again shortly.",
   },
 });
@@ -106,7 +120,8 @@ const corsOptions = {
     return callback(null, false);
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  // PATCH is used by the admin "mark complaint as read" action.
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 };
 
 // 🛡️ Security headers (X-Frame-Options, X-Content-Type-Options, HSTS, etc).
@@ -123,58 +138,13 @@ app.disable("x-powered-by");
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "100kb" }));
-app.use("/api", apiLimiter);
-app.use("/api/quizzes", quizRoutes);
 
-// 🤖 AI Configuration
-const AI_API_KEY = process.env.OPENROUTER_API_KEY;
-const AI_MODEL = "gpt-3.5-turbo";
-
-// 🔹 MongoDB Connection
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000,
-  })
-  .then(() => {
-    console.log("✅ Connected to MongoDB Atlas");
-    console.log("📊 Database:", mongoose.connection.name);
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
-    process.exit(1);
-  });
-
-
-// User Schema
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  fullName: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  phone: { type: String, required: true },
-  name: { type: String }, // Kept for backward compatibility
-  role: { type: String, enum: ["student", "admin"], default: "student" },
-  courses: [{ type: String }],
-  quizResults: [
-    {
-      courseId: String,
-      score: Number,
-      total: Number,
-      date: { type: Date, default: Date.now },
-    },
-  ],
-  createdAt: { type: Date, default: Date.now },
-});
-
-const User = mongoose.model("User", userSchema);
-
-// JWT Secret
+// JWT Secret. Its presence is enforced at startup (see `start()` below):
+// without it the server refuses to boot instead of running with broken auth.
 const JWT_SECRET = process.env.JWT_SECRET;
 
-if (!JWT_SECRET) {
-  console.error("❌ JWT_SECRET is not defined in .env file");
-  process.exit(1);
-}
+const isTruthyEnv = (value) =>
+  ["1", "true", "yes", "on"].includes(String(value || "").trim().toLowerCase());
 
 // Build a Mongo lookup that matches either the custom `id` field or a real
 // MongoDB `_id`. Frontend sometimes sends one and sometimes the other —
@@ -207,77 +177,104 @@ const authenticateToken = (req, res, next) => {
 
 // Routes
 
-// Health Check — namespaced under /api so the root path can serve the SPA
-// in monolith deployments. Render's healthCheckPath points here.
+// Liveness — namespaced under /api so the root path can serve the SPA in
+// monolith deployments. Render's healthCheckPath points here, so it must stay
+// 200 even while the database is down (otherwise Render would restart a
+// healthy web process), and it is registered before the API rate limiter so
+// health probes are never throttled.
 app.get("/api/health", (req, res) => {
   res.json({
     message: "CodeK Backend API is running",
     status: "OK",
+    db: getDbStatus(),
+    uptimeSeconds: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
   });
 });
 
-// 🤖 Test Chat Endpoint
-app.post("/api/chat", aiLimiter, chatValidator, async (req, res) => {
+app.use("/api", apiLimiter);
+
+// Readiness / deep check — sends a real ping to MongoDB. Used by the GitHub
+// keep-alive workflow so the Atlas Free cluster sees regular connections.
+app.get("/api/health/db", async (req, res) => {
   try {
-    const { prompt } = req.body;
-
-    if (!prompt) {
-      return res.status(400).json({ message: "Prompt is required" });
-    }
-
-    if (!AI_API_KEY) {
-      return res.status(500).json({ message: "AI API key not configured" });
-    }
-
-    // System instruction for the AI
-    const systemInstruction =
-      "You are a professional coding tutor for CodeK. Answer in English by default. Use Arabic only if the user asks in Arabic. Provide hints for questions without giving the direct answer.";
-
-    const response = await fetch(
-      `https://openrouter.ai/api/v1/chat/completions`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${AI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: AI_MODEL,
-          messages: [
-            { role: "system", content: systemInstruction },
-            { role: "user", content: prompt },
-          ],
-          max_tokens: 800,
-          temperature: 0.6,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("AI API Error:", errorData);
-      return res.status(response.status).json({
-        error: errorData.error?.message || "AI service error",
-      });
-    }
-
-    const data = await response.json();
-    const botResponse =
-      data.choices?.[0]?.message?.content || "I couldn't generate a response";
-
-    // Return response in both formats for compatibility
+    const { latencyMs } = await pingDb();
     res.json({
-      reply: botResponse,
-      response: botResponse,
+      status: "OK",
+      db: "connected",
+      latencyMs,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Chat Error:", error);
-    res.status(500).json({
-      error: error.message || "Failed to process chat request",
+    console.warn(`[health] DB ping failed: ${error.message}`);
+    res.set("Retry-After", "30");
+    res.status(503).json({
+      status: "ERROR",
+      code: "DB_UNAVAILABLE",
+      db: getDbStatus(),
+      timestamp: new Date().toISOString(),
     });
   }
 });
+
+// Optional sign-in requirement for the AI tutor (CHAT_REQUIRE_AUTH=true,
+// default off). The flag is read per request so tests can toggle it.
+const chatAuth = (req, res, next) => {
+  if (!isTruthyEnv(process.env.CHAT_REQUIRE_AUTH)) return next();
+
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({
+      code: "AUTH_REQUIRED",
+      message: "Please log in to use the AI tutor.",
+    });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(401).json({
+        code: "AUTH_INVALID",
+        message: "Your session has expired. Please log in again.",
+      });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// 🤖 AI tutor. Body: { message, history? } — see services/aiTutor.js.
+app.post("/api/chat", aiLimiter, chatAuth, chatValidator, async (req, res) => {
+  try {
+    const { reply, model, fallbackUsed } = await askTutor({
+      message: req.body.message,
+      history: req.body.history,
+    });
+    if (fallbackUsed) {
+      console.warn(`[chat] answered by fallback model ${fallbackUsed} (primary ${model} unavailable)`);
+    }
+    // `response` is kept alongside `reply` for older clients.
+    res.json({ reply, response: reply });
+  } catch (error) {
+    if (error instanceof AiTutorError) {
+      console.error(`[chat] ${error.code}: ${error.detail || error.message}`);
+      return res.status(error.status).json({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    console.error("[chat] Unexpected error:", error);
+    res.status(500).json({
+      code: "CHAT_FAILED",
+      message: "Failed to process the chat request.",
+    });
+  }
+});
+
+// Everything below needs the database. While it is unreachable, answer a fast
+// 503 instead of letting requests hang on Mongoose's command buffer.
+app.use("/api", requireDb);
+app.use("/api/quizzes", quizRoutes);
 
 // 1. Sign Up
 app.post("/api/auth/signup", authLimiter, signupValidator, async (req, res) => {
@@ -425,7 +422,9 @@ app.post("/api/quiz/submit", authenticateToken, quizSubmitValidator, async (req,
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (req.user.username === "admin") {
+    // Check the role, not a hard-coded username: the admin account's name now
+    // comes from ADMIN_USERNAME.
+    if (req.user.role === "admin") {
       return res.status(403).json({ message: "Admin cannot submit quizzes" });
     }
 
@@ -1129,7 +1128,13 @@ if (process.env.NODE_ENV === "production") {
   const buildPath = path.join(__dirname, "..", "build");
   app.use(express.static(buildPath));
 
-  app.get(/^\/(?!api\/).*/, (req, res) => {
+  // A request for a missing static file (e.g. a removed lecture PDF or a
+  // stale JS chunk) must 404 instead of receiving index.html under a .pdf/.js
+  // name. Anything else is a client-side route and gets the SPA shell.
+  const STATIC_FILE_EXT =
+    /\.(pdf|pptx?|docx?|xlsx?|zip|js|mjs|css|map|json|txt|xml|png|jpe?g|gif|webp|svg|ico|woff2?|ttf|eot|mp4|webm)$/i;
+  app.get(/^\/(?!api\/).*/, (req, res, next) => {
+    if (STATIC_FILE_EXT.test(req.path)) return next();
     res.sendFile(path.join(buildPath, "index.html"));
   });
 }
@@ -1141,13 +1146,61 @@ app.use((req, res) => {
 
 // Error Handler
 app.use((err, req, res, next) => {
+  // Malformed or oversized JSON bodies are client errors, not server errors.
+  if (err && err.type === "entity.parse.failed") {
+    return res
+      .status(400)
+      .json({ code: "INVALID_JSON", message: "Request body is not valid JSON" });
+  }
+  if (err && err.type === "entity.too.large") {
+    return res
+      .status(413)
+      .json({ code: "PAYLOAD_TOO_LARGE", message: "Request body is too large" });
+  }
   console.error("Server error:", err);
   res.status(500).json({ message: "Internal server error" });
 });
 
 // Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📡 Environment: ${process.env.NODE_ENV || "development"}`);
-});
+// The HTTP listener starts first and the database connects in the background,
+// so the React app and /api/health stay up while MongoDB is unreachable.
+function start() {
+  if (!JWT_SECRET) {
+    console.error(
+      "\n" +
+        "FATAL: JWT_SECRET is not set. Refusing to start, because every login and\n" +
+        "protected route depends on it.\n" +
+        "  - Render: Dashboard → codek → Environment → add JWT_SECRET\n" +
+        "  - Local:  add JWT_SECRET to backend/.env (see backend/.env.example)\n" +
+        "  Generate one with: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"\n",
+    );
+    process.exit(1);
+  }
+
+  const PORT = process.env.PORT || 5000;
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📡 Environment: ${process.env.NODE_ENV || "development"}`);
+  });
+
+  connectWithRetry(process.env.MONGODB_URI);
+
+  // Render sends SIGTERM on deploys and spin-downs.
+  const shutdown = (signal) => {
+    console.log(`${signal} received — shutting down`);
+    server.close(() => {
+      disconnectDb().finally(() => process.exit(0));
+    });
+    setTimeout(() => process.exit(0), 10000).unref();
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+
+  return server;
+}
+
+if (require.main === module) {
+  start();
+}
+
+module.exports = { app, start };

@@ -19,7 +19,8 @@ router.get("/:courseId", async (req, res) => {
     res.json(quiz);
   } catch (err) {
     console.error("Quiz fetch error:", err);
-    res.status(500).json({ message: err.message });
+    // Do not echo internal error text to the client.
+    res.status(500).json({ message: "Server error" });
   }
 });
 

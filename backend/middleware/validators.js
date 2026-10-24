@@ -2,12 +2,14 @@
 // Centralized request validation rules using express-validator.
 // Each exported array is a list of middlewares: chain validators + handleValidation.
 const { body, validationResult } = require("express-validator");
+const { LIMITS: CHAT_LIMITS } = require("../services/aiTutor");
 
 // Final middleware that turns accumulated errors into a 400 JSON response.
 const handleValidation = (req, res, next) => {
   const errors = validationResult(req);
   if (errors.isEmpty()) return next();
   return res.status(400).json({
+    code: "VALIDATION_ERROR",
     message: errors.array()[0].msg,
     errors: errors.array().map((e) => ({ field: e.path, msg: e.msg })),
   });
@@ -59,11 +61,56 @@ const loginValidator = [
   handleValidation,
 ];
 
+// Older clients sent `{ prompt }`. Accept it as an alias for `message` so a
+// browser tab still running the previous bundle keeps working.
+const acceptLegacyPrompt = (req, res, next) => {
+  if (
+    req.body &&
+    typeof req.body === "object" &&
+    req.body.message === undefined &&
+    req.body.prompt !== undefined
+  ) {
+    req.body.message = req.body.prompt;
+  }
+  next();
+};
+
+const isPlainObject = (value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Each history entry must be an object with role and content");
+  }
+  return true;
+};
+
 const chatValidator = [
-  body("prompt")
+  acceptLegacyPrompt,
+  body("message")
+    .exists({ values: "null" })
+    .withMessage("message is required")
+    .bail()
     .custom(isPlainString)
-    .isLength({ min: 1, max: 4000 })
-    .withMessage("Prompt must be 1-4000 characters"),
+    .withMessage("message must be a string")
+    .bail()
+    .trim()
+    .isLength({ min: 1, max: CHAT_LIMITS.MESSAGE_MAX_CHARS })
+    .withMessage(`message must be 1-${CHAT_LIMITS.MESSAGE_MAX_CHARS} characters`),
+  body("history")
+    .optional()
+    .isArray({ max: CHAT_LIMITS.HISTORY_MAX_ITEMS })
+    .withMessage(`history must be an array of at most ${CHAT_LIMITS.HISTORY_MAX_ITEMS} messages`),
+  body("history.*").custom(isPlainObject),
+  body("history.*.role")
+    .isIn(["user", "assistant"])
+    .withMessage("history role must be 'user' or 'assistant'"),
+  body("history.*.content")
+    .custom(isPlainString)
+    .withMessage("history content must be a string")
+    .bail()
+    .trim()
+    .isLength({ min: 1, max: CHAT_LIMITS.HISTORY_ITEM_MAX_CHARS })
+    .withMessage(
+      `history content must be 1-${CHAT_LIMITS.HISTORY_ITEM_MAX_CHARS} characters`,
+    ),
   handleValidation,
 ];
 
