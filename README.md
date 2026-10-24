@@ -4,6 +4,8 @@
 
 The project received a **Grade A** and was demonstrated live during the graduation-project defence.
 
+**Live demo:** https://codek-8ha3.onrender.com
+
 ---
 
 ## Project Overview
@@ -342,7 +344,7 @@ CodeK was developed by a team of six students.
 - Languages: **Arabic / English**
 - Grade: **A**
 - Demonstrated live at the graduation defence
-- Live demo: _link to be added after deployment_ (`https://<service-name>.onrender.com`)
+- Live demo: https://codek-8ha3.onrender.com (free hosting: the first visit after 15 idle minutes takes about a minute to wake up)
 
 ---
 
