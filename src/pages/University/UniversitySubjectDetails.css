@@ -13,22 +13,21 @@
   border-radius: 10px;
 }
 
-.download-btn {
-  text-decoration: none;
-  font-weight: 600;
-  color: #2563eb;
-}
-.chapter-actions {
-  display: flex;
-  gap: 0.5rem;
+/* Shown instead of the former View/Download buttons. */
+.materials-note {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--brand, #38bdf8);
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.08);
+  color: var(--muted, #94a3b8);
 }
 
-.view-btn {
-  border: none;
-  background: #00d9ff;
-  color: #000000;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
+.materials-note p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.materials-note p[dir="rtl"] {
+  font-family: Cairo, Poppins, sans-serif;
 }

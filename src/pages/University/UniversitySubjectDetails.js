@@ -52,6 +52,14 @@ export default function UniversitySubjectDetails() {
 
             <section>
               <h2>Chapters</h2>
+              {/* The lecture files are not published (copyright), so chapters
+                  are listed without View/Download links. */}
+              <div className="materials-note" role="note">
+                <p>Course materials are available to enrolled students.</p>
+                <p lang="ar" dir="rtl">
+                  المواد الدراسية متاحة للطلبة المسجّلين في المادة.
+                </p>
+              </div>
               <ul className="chapters-list">
                 {subject.chapters.map((chapter, index) => {
                   // Some seed data stores chapters as plain strings, others
@@ -60,27 +68,10 @@ export default function UniversitySubjectDetails() {
                     chapter && typeof chapter === "object";
                   const id = isObject ? chapter.id : undefined;
                   const title = isObject ? chapter.title : chapter;
-                  const file = isObject ? chapter.file : null;
 
                   return (
                     <li key={id || `chapter-${index}`} className="chapter-item">
                       <span>{title}</span>
-
-                      {file && (
-                        <div className="chapter-actions">
-                          <button
-                            type="button"
-                            className="view-btn"
-                            onClick={() => window.open(file, "_blank")}
-                          >
-                            👁 View
-                          </button>
-
-                          <a href={file} download className="download-btn">
-                            ⬇ Download
-                          </a>
-                        </div>
-                      )}
                     </li>
                   );
                 })}
