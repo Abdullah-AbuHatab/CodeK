@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { quizService } from "../../services/quizService";
 import { QuizContext } from "../../context/QuizContext";
-import { API_URL } from "../../config";
+import { askTutor } from "../../services/chatService";
 import "./Quiz.css";
 
 export default function Quiz() {
@@ -109,14 +109,7 @@ Options: ${question.options.join(", ")}
 
 Provide a SHORT, one-sentence hint in English to help the student find the correct answer WITHOUT directly naming it or giving the answer away. Be encouraging and guide them to think critically.`;
 
-      const response = await fetch(`${API_URL}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const data = await response.json();
-      setAiHelp(data.response || data.reply || "Could not retrieve hint");
+      setAiHelp(await askTutor({ message: prompt }));
     } catch (error) {
       console.error("AI Help Error:", error);
       setAiHelp("Could not retrieve hint. Please try again.");
@@ -146,8 +139,6 @@ Provide a SHORT, one-sentence hint in English to help the student find the corre
         .map((a) => `- ${a.question}`)
         .join("\n");
 
-      const correctCount = review.filter((a) => a.isCorrect).length;
-      const wrongCount = review.filter((a) => !a.isCorrect).length;
       const percentage = Math.round((finalScore / total) * 100);
 
       const prompt = `You are an expert educational AI. Analyze this student's quiz performance.
@@ -171,14 +162,7 @@ Please provide a detailed analysis in this format:
 
 Keep the analysis concise, professional, and actionable.`;
 
-      const response = await fetch(`${API_URL}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const data = await response.json();
-      setAiAnalysis(data.response || data.reply || "Analysis unavailable");
+      setAiAnalysis(await askTutor({ message: prompt }));
     } catch (error) {
       console.error("Analysis Error:", error);
       setAiAnalysis("Analysis currently unavailable.");

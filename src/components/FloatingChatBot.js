@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { QuizContext } from "../context/QuizContext";
-import { API_URL } from "../config";
+import { askTutor, toChatHistory } from "../services/chatService";
 import "./FloatingChatBot.css";
 
 export default function FloatingChatBot() {
@@ -11,6 +11,8 @@ export default function FloatingChatBot() {
       role: "assistant",
       content:
         "Hi! 👋 I'm your CodeK learning assistant. How can I help you with your coding journey today?",
+      // UI-only entries are never sent to the model as conversation history.
+      local: true,
     },
   ]);
   const [input, setInput] = useState("");
@@ -39,54 +41,26 @@ export default function FloatingChatBot() {
     setIsLoading(true);
 
     try {
-      const conversationContext = messages
-        .slice(-6)
-        .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
-        .join("\n");
-
-      // التعديل هنا ليكون الرد افتراضياً بالإنجليزية
-      const prompt = `
-You are the official AI assistant for CodeK, a coding education platform (Web, AI, Cyber Security).
-
-Current Conversation Context:
-${conversationContext}
-
-New User Message: ${userMessage}
-
-Instructions:
-1. Respond in English by default.
-2. ONLY respond in Arabic if the user addresses you in Arabic.
-3. Be professional, educational, and encouraging.
-4. Use code snippets or bullet points for technical explanations.
-`;
-
-      const response = await fetch(`${API_URL}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+      // The tutor's instructions (language, tone, hint-first) live on the
+      // server; the client only sends the new message plus recent turns.
+      const botReply = await askTutor({
+        message: userMessage,
+        history: toChatHistory(messages),
       });
 
-      if (!response.ok) {
-        throw new Error("Server response error");
-      }
-
-      const data = await response.json();
-      const botReply = data.response || data.reply;
-
-      if (!botReply) throw new Error("Invalid response");
-
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: botReply.trim() },
-      ]);
+      setMessages((prev) => [...prev, { role: "assistant", content: botReply }]);
     } catch (error) {
       console.error("Chat Error:", error);
+      const needsLogin =
+        error.code === "AUTH_REQUIRED" || error.code === "AUTH_INVALID";
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content:
-            "⚠️ Sorry, I'm having trouble connecting. Please ensure the server is running.",
+          content: needsLogin
+            ? "🔒 Please log in to chat with the CodeK assistant."
+            : "⚠️ Sorry, I'm having trouble connecting. Please ensure the server is running.",
+          local: true,
         },
       ]);
     } finally {

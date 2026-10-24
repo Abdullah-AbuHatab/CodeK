@@ -11,7 +11,6 @@ export default function Courses() {
   const [levelFilter, setLevelFilter] = useState("All");
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,11 +28,9 @@ export default function Courses() {
       const data = await response.json();
       // If database is empty, use mock data as fallback
       setCourses(data && data.length > 0 ? data : COURSES);
-      setError(null);
     } catch (err) {
       console.warn("Error fetching courses from DB, using mock data:", err);
       setCourses(COURSES);
-      setError(null);
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminService, authService } from "../../services/authService";
-import { COURSES } from "../../data/coursesData";
 import { API_URL } from "../../config";
 import "./Admin.css";
 
@@ -128,13 +127,6 @@ export default function Admin() {
     if (course) return course.title;
     const uniSubject = universitySubjects.find((s) => s.id === courseId);
     return uniSubject ? uniSubject.title : courseId;
-  };
-
-  // Logout handler
-  const handleLogout = () => {
-    authService.logout();
-    window.dispatchEvent(new Event("storage"));
-    navigate("/login");
   };
 
   return (

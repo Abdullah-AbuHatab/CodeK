@@ -1,6 +1,7 @@
 // src/services/quizService.js
 import { authService } from "./authService";
 import { API_URL } from "../config";
+import { askTutor } from "./chatService";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -56,18 +57,9 @@ export const quizService = {
   },
   async getHint(question) {
     try {
-      const response = await fetch(`${API_URL}/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders(),
-        },
-        body: JSON.stringify({
-          prompt: `Provide a hint for this question without giving the answer: "${question}"`,
-        }),
+      return await askTutor({
+        message: `Provide a hint for this question without giving the answer: "${question}"`,
       });
-      const data = await handleResponse(response);
-      return data.reply;
     } catch (error) {
       console.error("Failed to get AI hint:", error);
       throw error;
@@ -86,16 +78,7 @@ export const quizService = {
 
       const prompt = `Analyze these quiz results. Identify strengths and weaknesses, and suggest a personalized learning plan:\n\n${reviewText}`;
 
-      const response = await fetch(`${API_URL}/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders(),
-        },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await handleResponse(response);
-      return data.reply;
+      return await askTutor({ message: prompt });
     } catch (error) {
       console.error("Failed to analyze results:", error);
       throw error;
